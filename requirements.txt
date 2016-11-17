@@ -1,0 +1,3 @@
+BuildBot[bundle]==0.9.1
+Twisted==16.5.0
+zope.interface==4.3.2

@@ -1,0 +1,6 @@
+cmd: ".workspace\\venv\\Scripts\\python.exe"
+name: PyTest
+args:
+  - setup.py
+  - test
+sh: true
