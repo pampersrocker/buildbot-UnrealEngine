@@ -1,6 +1,5 @@
-cmd: ".workspace\\venv\\Scripts\\python.exe"
-name: PyTest
+cmd: ".workspace\\venv\\Scripts\\trial.exe"
+name: Trial
 args:
-  - setup.py
-  - test
+  - buildbot_UnrealEngine
 sh: true

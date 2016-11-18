@@ -1,5 +1,7 @@
 .workspace/
 
+_trial_temp/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
