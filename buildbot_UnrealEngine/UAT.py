@@ -3,13 +3,15 @@ from buildbot import config
 
 from os import path
 
-'''
-Creates a command like
-<Path to Engine>\Engine\Build\BatchFiles\RunUAT.bat BuildCookRun -project=<ProjectPath> -noP4 -nocompileeditor
--targetplatform=<Platform> -platform=<Platform> -clientconfig=<TargetConfig> -serverconfig=<TargetConfig>
--cook -allmaps -compile -stage -pak -archive -archivedirectory=<ArchivePath> -Build -prereqs -package
-'''
+
 class BuildCookRun(ShellCommand):
+
+  """
+  Creates a command like
+  <Path to Engine>\Engine\Build\BatchFiles\RunUAT.bat BuildCookRun -project=<ProjectPath> -noP4 -nocompileeditor
+  -targetplatform=<Platform> -platform=<Platform> -clientconfig=<TargetConfig> -serverconfig=<TargetConfig>
+  -cook -allmaps -compile -stage -pak -archive -archivedirectory=<ArchivePath> -Build -prereqs -package
+  """
 
   supported_target_platforms = ["Win32", "Win64", "Mac", "XboxOne", "PS4", "IOS", "Android", "HTML5", "Linux", "AllDesktop", "TVOS"]
   supported_target_config = ["Debug", "Development", "Test", "Shipping"]
