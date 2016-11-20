@@ -1,4 +1,4 @@
-# ue4-buildbot
+# buildbot-UnrealEngine
 Buildbot Plugin to run Commands using the Unreal Automation Tool
 
 #Development Setup under Windows
