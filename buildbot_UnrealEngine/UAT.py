@@ -36,6 +36,7 @@ class BuildCookRun(ShellCommand):
       no_compile_editor=False,
       compile=None,
       cook=None,
+      cook_on_the_fly=None,
       #maps=True,
       **kwargs):
     self.engine_path=engine_path
@@ -46,6 +47,7 @@ class BuildCookRun(ShellCommand):
     self.no_compile_editor=no_compile_editor
     self.compile=compile
     self.cook=cook
+    self.cook_on_the_fly=cook_on_the_fly
     if target_config not in self.supported_target_config:
       config.error("target_config '{0}' is not supported".format(self.target_config))
     if target_platform not in self.supported_target_platforms:
@@ -81,5 +83,6 @@ class BuildCookRun(ShellCommand):
       command.append("-NoCompileEditor")
     addArgIfSet(self.compile, command, "-Compile", "-NoCompile")
     addArgIfSet(self.cook, command, "-Cook", "-SkipCook")
+    addArgIfSet(self.cook_on_the_fly, command, "-CookOnTheFly", "-SkipCookOnTheFly")
     self.setCommand(command)
     return ShellCommand.start(self)
