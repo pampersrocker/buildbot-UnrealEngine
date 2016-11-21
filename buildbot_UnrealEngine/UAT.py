@@ -25,19 +25,23 @@ class BuildCookRun(ShellCommand):
     "build_platform"
   ]
 
-  """Creates build commands for the Unreal Automation Tool"""
   def __init__(self,
       engine_path,
       project_path,
       target_platform="Win64",
       target_config="Development",
       build_platform="Windows",
+      no_compile_editor=False,
+      #cook=True,
+      #maps=True,
+      #compile=True
       **kwargs):
     self.engine_path=engine_path
     self.project_path=project_path
     self.target_platform=target_platform
     self.target_config=target_config
     self.build_platform=build_platform
+    self.no_compile_editor=no_compile_editor
     if target_config not in self.supported_target_config:
       config.error("target_config '{0}' is not supported".format(self.target_config))
     if target_platform not in self.supported_target_platforms:
@@ -62,5 +66,7 @@ class BuildCookRun(ShellCommand):
     command.append("-platform={0}".format(self.target_platform))
     command.append("-clientconfig={0}".format(self.target_config))
     command.append("-serverconfig={0}".format(self.target_config))
+    if self.no_compile_editor:
+      command.append("-NoCompileEditor")
     self.setCommand(command)
     return ShellCommand.start(self)

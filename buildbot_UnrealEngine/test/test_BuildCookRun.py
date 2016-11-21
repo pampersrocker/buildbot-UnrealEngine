@@ -68,6 +68,29 @@ class TestBuildCookRun(steps.BuildStepMixin, unittest.TestCase, configmixin.Conf
             "target_platform 'Foo' is not supported",
             lambda: UAT.BuildCookRun("Here", "There", target_platform="Foo"))
 
+  def test_NoCompileEditor(self):
+    self.setupStep(
+      UAT.BuildCookRun("Here", "There", no_compile_editor=True)
+    )
+    self.expectCommands(
+      ExpectShell(
+        workdir="wkdir",
+        command=[
+          path.join("Here", "Engine", "Build", "BatchFiles", "RunUAT.bat"),
+          "BuildCookRun",
+          "-project=There",
+          "-targetplatform=Win64",
+          "-platform=Win64",
+          "-clientconfig=Development",
+          "-serverconfig=Development",
+          "-NoCompileEditor"
+        ]
+      )
+      + 0
+    )
+    self.expectOutcome(result=SUCCESS)
+    return self.runStep()
+
 def targetPlatformTemplate(target_platform):
 
   """
@@ -113,7 +136,8 @@ def generateTargetConfigurationTest(target_config):
           "-targetplatform=Win64",
           "-platform=Win64",
           "-clientconfig={0}".format(target_config),
-          "-serverconfig={0}".format(target_config)])
+          "-serverconfig={0}".format(target_config)]
+        )
       + 0
     )
     self.expectOutcome(result=SUCCESS)
