@@ -41,3 +41,14 @@ Buildbot Plugin to run Commands using the Unreal Automation Tool
   ```
   trial buildbot_UnrealEngine.test
   ```
+
+* For code coverage install txcovreport:
+  ```
+  easy_install http://darcs.idyll.org/~t/projects/figleaf-latest.tar.gz
+  pip install git+https://github.com/jrydberg/txcovreport.git
+  ```
+
+  Now you can run code coverage using
+  ```
+  trial --reporter=tree-coverage buildbot_UnrealEngine.test
+  ```

@@ -1,5 +1,6 @@
 cmd: ".workspace\\venv\\Scripts\\trial.exe"
 name: Trial
 args:
+  - --reporter=tree-coverage
   - buildbot_UnrealEngine
 sh: true
