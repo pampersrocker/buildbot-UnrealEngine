@@ -114,6 +114,52 @@ class TestBuildCookRun(steps.BuildStepMixin, unittest.TestCase, configmixin.Conf
     self.expectOutcome(result=SUCCESS)
     return self.runStep()
 
+  def test_SkipCook(self):
+    self.setupStep(
+      UAT.BuildCookRun("Here", "There", cook=False)
+    )
+    self.expectCommands(
+      ExpectShell(
+        workdir="wkdir",
+        command=[
+          path.join("Here", "Engine", "Build", "BatchFiles", "RunUAT.bat"),
+          "BuildCookRun",
+          "-project=There",
+          "-targetplatform=Win64",
+          "-platform=Win64",
+          "-clientconfig=Development",
+          "-serverconfig=Development",
+          "-SkipCook"
+        ]
+      )
+      + 0
+    )
+    self.expectOutcome(result=SUCCESS)
+    return self.runStep()
+
+  def test_Cook(self):
+    self.setupStep(
+      UAT.BuildCookRun("Here", "There", cook=True)
+    )
+    self.expectCommands(
+      ExpectShell(
+        workdir="wkdir",
+        command=[
+          path.join("Here", "Engine", "Build", "BatchFiles", "RunUAT.bat"),
+          "BuildCookRun",
+          "-project=There",
+          "-targetplatform=Win64",
+          "-platform=Win64",
+          "-clientconfig=Development",
+          "-serverconfig=Development",
+          "-Cook"
+        ]
+      )
+      + 0
+    )
+    self.expectOutcome(result=SUCCESS)
+    return self.runStep()
+
   def test_NoCompile(self):
     self.setupStep(
       UAT.BuildCookRun("Here", "There", compile=False)

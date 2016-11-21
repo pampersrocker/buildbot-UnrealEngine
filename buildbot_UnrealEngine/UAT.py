@@ -5,6 +5,8 @@ from buildbot import config
 from os import path
 
 
+
+
 class BuildCookRun(ShellCommand):
 
   """
@@ -33,7 +35,7 @@ class BuildCookRun(ShellCommand):
       build_platform="Windows",
       no_compile_editor=False,
       compile=None,
-      #cook=True,
+      cook=None,
       #maps=True,
       **kwargs):
     self.engine_path=engine_path
@@ -43,6 +45,7 @@ class BuildCookRun(ShellCommand):
     self.build_platform=build_platform
     self.no_compile_editor=no_compile_editor
     self.compile=compile
+    self.cook=cook
     if target_config not in self.supported_target_config:
       config.error("target_config '{0}' is not supported".format(self.target_config))
     if target_platform not in self.supported_target_platforms:
@@ -59,7 +62,14 @@ class BuildCookRun(ShellCommand):
     elif self.build_platform == "Mac":
       return "command"
 
+
   def start(self):
+
+    def addArgIfSet(flag, commandList, ifTrue, ifFalse):
+      if flag == True:
+        commandList.append(ifTrue)
+      elif flag == False:
+        commandList.append(ifFalse)
     command=[ path.join( self.engine_path, "Engine", "Build", "BatchFiles", "RunUAT.{0}".format(self.getPlatformScriptExtension()) )]
     command.append("BuildCookRun")
     command.append("-project={0}".format(self.project_path))
@@ -69,9 +79,7 @@ class BuildCookRun(ShellCommand):
     command.append("-serverconfig={0}".format(self.target_config))
     if self.no_compile_editor:
       command.append("-NoCompileEditor")
-    if self.compile == True:
-      command.append("-Compile")
-    elif self.compile == False:
-      command.append("-NoCompile")
+    addArgIfSet(self.compile, command, "-Compile", "-NoCompile")
+    addArgIfSet(self.cook, command, "-Cook", "-SkipCook")
     self.setCommand(command)
     return ShellCommand.start(self)
