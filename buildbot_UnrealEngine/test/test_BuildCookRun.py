@@ -45,9 +45,9 @@ class TestBuildCookRun(steps.BuildStepMixin, unittest.TestCase, configmixin.Conf
           "-targetplatform=Win64",
           "-platform=Win64",
           "-clientconfig=Development",
-          "-serverconfig=Development"
-          ]
-        )
+          "-serverconfig=Development",
+        ]
+      )
       + 0
     )
     self.expectOutcome(result=SUCCESS)
@@ -84,6 +84,52 @@ class TestBuildCookRun(steps.BuildStepMixin, unittest.TestCase, configmixin.Conf
           "-clientconfig=Development",
           "-serverconfig=Development",
           "-NoCompileEditor"
+        ]
+      )
+      + 0
+    )
+    self.expectOutcome(result=SUCCESS)
+    return self.runStep()
+
+  def test_Compile(self):
+    self.setupStep(
+      UAT.BuildCookRun("Here", "There", compile=True)
+    )
+    self.expectCommands(
+      ExpectShell(
+        workdir="wkdir",
+        command=[
+          path.join("Here", "Engine", "Build", "BatchFiles", "RunUAT.bat"),
+          "BuildCookRun",
+          "-project=There",
+          "-targetplatform=Win64",
+          "-platform=Win64",
+          "-clientconfig=Development",
+          "-serverconfig=Development",
+          "-Compile"
+        ]
+      )
+      + 0
+    )
+    self.expectOutcome(result=SUCCESS)
+    return self.runStep()
+
+  def test_NoCompile(self):
+    self.setupStep(
+      UAT.BuildCookRun("Here", "There", compile=False)
+    )
+    self.expectCommands(
+      ExpectShell(
+        workdir="wkdir",
+        command=[
+          path.join("Here", "Engine", "Build", "BatchFiles", "RunUAT.bat"),
+          "BuildCookRun",
+          "-project=There",
+          "-targetplatform=Win64",
+          "-platform=Win64",
+          "-clientconfig=Development",
+          "-serverconfig=Development",
+          "-NoCompile"
         ]
       )
       + 0
