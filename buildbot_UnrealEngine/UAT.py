@@ -1,3 +1,4 @@
+# -*- test-case-name: buildbot_UnrealEngine.test.test_BuildCookRun -*-
 from buildbot.steps.shell import ShellCommand
 from buildbot import config
 
@@ -52,8 +53,6 @@ class BuildCookRun(ShellCommand):
       return "sh"
     elif self.build_platform == "Mac":
       return "command"
-    else:
-      config.error("build_platform '{0}' is not supported".format(self.build_platform))
 
   def start(self):
     command=[ path.join( self.engine_path, "Engine", "Build", "BatchFiles", "RunUAT.{0}".format(self.getPlatformScriptExtension()) )]
