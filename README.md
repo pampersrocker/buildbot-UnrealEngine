@@ -1,4 +1,4 @@
-# ue4-buildbot
+# buildbot-UnrealEngine
 Buildbot Plugin to run Commands using the Unreal Automation Tool
 
 #Development Setup under Windows
@@ -19,7 +19,7 @@ Buildbot Plugin to run Commands using the Unreal Automation Tool
   pip install -r requirements.txt
   ```
 
-* Download [PyWin32](https://sourceforge.net/projects/pywin32/files/pywin32/) (for tiwsted) and install it in your venv
+* Download [PyWin32](https://sourceforge.net/projects/pywin32/files/pywin32/) (for twisted) and install it in your venv
   ```
   easy_install <PATH_TO_pywin32-220.win32-py2.7.exe>
   ```
