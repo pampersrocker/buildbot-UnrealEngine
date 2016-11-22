@@ -2,9 +2,11 @@
 
 from setuptools import setup
 
+VERSION="0.0.1"
+
 setup(
     name="buildbot_UnrealEngine",
-    version="0.0.1",
+    version=VERSION,
     description="Easy configuration for the Unreal Automation Tool",
     author="Marvin Pohl",
     author_email="mp120@hdm-stuttgart.de",
