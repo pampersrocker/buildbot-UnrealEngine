@@ -46,6 +46,7 @@ class TestBuildCookRun(steps.BuildStepMixin, unittest.TestCase, configmixin.Conf
           "-platform=Win64",
           "-clientconfig=Development",
           "-serverconfig=Development",
+          "-Rocket"
         ]
       )
       + 0
@@ -83,7 +84,8 @@ class TestBuildCookRun(steps.BuildStepMixin, unittest.TestCase, configmixin.Conf
           "-platform=Win64",
           "-clientconfig=Development",
           "-serverconfig=Development",
-          "-Build"
+          "-Build",
+          "-Rocket"
         ]
       )
       + 0
@@ -106,6 +108,7 @@ class TestBuildCookRun(steps.BuildStepMixin, unittest.TestCase, configmixin.Conf
           "-platform=Win64",
           "-clientconfig=Development",
           "-serverconfig=Development",
+          "-Rocket"
         ]
       )
       + 0
@@ -128,7 +131,8 @@ class TestBuildCookRun(steps.BuildStepMixin, unittest.TestCase, configmixin.Conf
           "-platform=Win64",
           "-clientconfig=Development",
           "-serverconfig=Development",
-          "-Clean"
+          "-Clean",
+          "-Rocket"
         ]
       )
       + 0
@@ -151,6 +155,7 @@ class TestBuildCookRun(steps.BuildStepMixin, unittest.TestCase, configmixin.Conf
           "-platform=Win64",
           "-clientconfig=Development",
           "-serverconfig=Development",
+          "-Rocket"
         ]
       )
       + 0
@@ -158,9 +163,37 @@ class TestBuildCookRun(steps.BuildStepMixin, unittest.TestCase, configmixin.Conf
     self.expectOutcome(result=SUCCESS)
     return self.runStep()
 
-  def test_Rocket(self):
+  def test_EngineTypeInvalid(self):
+    self.assertRaisesConfigError(
+            "engine_type 'Foo' is not supported",
+            lambda: UAT.BuildCookRun("Here", "There", engine_type="Foo"))
+
+  def test_EngineTypeInstalled(self):
     self.setupStep(
-      UAT.BuildCookRun("Here", "There", rocket=True)
+      UAT.BuildCookRun("Here", "There", engine_type="Installed")
+    )
+    self.expectCommands(
+      ExpectShell(
+        workdir="wkdir",
+        command=[
+          path.join("Here", "Engine", "Build", "BatchFiles", "RunUAT.bat"),
+          "BuildCookRun",
+          "-project=There",
+          "-targetplatform=Win64",
+          "-platform=Win64",
+          "-clientconfig=Development",
+          "-serverconfig=Development",
+          "-Installed"
+        ]
+      )
+      + 0
+    )
+    self.expectOutcome(result=SUCCESS)
+    return self.runStep()
+
+  def test_EngineTypeRocket(self):
+    self.setupStep(
+      UAT.BuildCookRun("Here", "There", engine_type="Rocket")
     )
     self.expectCommands(
       ExpectShell(
@@ -181,9 +214,9 @@ class TestBuildCookRun(steps.BuildStepMixin, unittest.TestCase, configmixin.Conf
     self.expectOutcome(result=SUCCESS)
     return self.runStep()
 
-  def test_NoRocket(self):
+  def test_EngineTypeSource(self):
     self.setupStep(
-      UAT.BuildCookRun("Here", "There", rocket=False)
+      UAT.BuildCookRun("Here", "There", engine_type="Source")
     )
     self.expectCommands(
       ExpectShell(
@@ -218,7 +251,8 @@ class TestBuildCookRun(steps.BuildStepMixin, unittest.TestCase, configmixin.Conf
           "-platform=Win64",
           "-clientconfig=Development",
           "-serverconfig=Development",
-          "-NoCompileEditor"
+          "-NoCompileEditor",
+          "-Rocket"
         ]
       )
       + 0
@@ -241,7 +275,8 @@ class TestBuildCookRun(steps.BuildStepMixin, unittest.TestCase, configmixin.Conf
           "-platform=Win64",
           "-clientconfig=Development",
           "-serverconfig=Development",
-          "-Compile"
+          "-Compile",
+          "-Rocket"
         ]
       )
       + 0
@@ -264,7 +299,8 @@ class TestBuildCookRun(steps.BuildStepMixin, unittest.TestCase, configmixin.Conf
           "-platform=Win64",
           "-clientconfig=Development",
           "-serverconfig=Development",
-          "-SkipCook"
+          "-SkipCook",
+          "-Rocket"
         ]
       )
       + 0
@@ -287,7 +323,8 @@ class TestBuildCookRun(steps.BuildStepMixin, unittest.TestCase, configmixin.Conf
           "-platform=Win64",
           "-clientconfig=Development",
           "-serverconfig=Development",
-          "-Cook"
+          "-Cook",
+          "-Rocket"
         ]
       )
       + 0
@@ -310,7 +347,8 @@ class TestBuildCookRun(steps.BuildStepMixin, unittest.TestCase, configmixin.Conf
           "-platform=Win64",
           "-clientconfig=Development",
           "-serverconfig=Development",
-          "-SkipCookOnTheFly"
+          "-SkipCookOnTheFly",
+          "-Rocket"
         ]
       )
       + 0
@@ -333,7 +371,8 @@ class TestBuildCookRun(steps.BuildStepMixin, unittest.TestCase, configmixin.Conf
           "-platform=Win64",
           "-clientconfig=Development",
           "-serverconfig=Development",
-          "-CookOnTheFly"
+          "-CookOnTheFly",
+          "-Rocket"
         ]
       )
       + 0
@@ -356,7 +395,8 @@ class TestBuildCookRun(steps.BuildStepMixin, unittest.TestCase, configmixin.Conf
           "-platform=Win64",
           "-clientconfig=Development",
           "-serverconfig=Development",
-          "-NoCompile"
+          "-NoCompile",
+          "-Rocket"
         ]
       )
       + 0
@@ -383,7 +423,8 @@ def targetPlatformTemplate(target_platform):
           "-targetplatform={0}".format(target_platform),
           "-platform={0}".format(target_platform),
           "-clientconfig=Development",
-          "-serverconfig=Development"
+          "-serverconfig=Development",
+          "-Rocket"
         ]
       )
       + 0
@@ -409,8 +450,10 @@ def generateTargetConfigurationTest(target_config):
           "-targetplatform=Win64",
           "-platform=Win64",
           "-clientconfig={0}".format(target_config),
-          "-serverconfig={0}".format(target_config)]
-        )
+          "-serverconfig={0}".format(target_config),
+          "-Rocket"
+        ]
+      )
       + 0
     )
     self.expectOutcome(result=SUCCESS)
@@ -434,7 +477,8 @@ def generateBuildPlatformTest(build_platform, ending):
           "-targetplatform=Win64",
           "-platform=Win64",
           "-clientconfig=Development",
-          "-serverconfig=Development"
+          "-serverconfig=Development",
+          "-Rocket"
         ]
       )
       + 0
