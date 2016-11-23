@@ -39,6 +39,7 @@ class BuildCookRun(ShellCommand):
       cook_on_the_fly=None,
       build=False,
       clean=False,
+      rocket=False,
       #maps=True,
       **kwargs):
     self.engine_path=engine_path
@@ -53,6 +54,7 @@ class BuildCookRun(ShellCommand):
     #self.build is apparently used somhwere internally for something else
     self.build_step=build
     self.clean=clean
+    self.rocket=rocket
     if target_config not in self.supported_target_config:
       config.error("target_config '{0}' is not supported".format(self.target_config))
     if target_platform not in self.supported_target_platforms:
@@ -93,6 +95,8 @@ class BuildCookRun(ShellCommand):
       command.append("-Build")
     if self.clean:
       command.append("-Clean")
+    if self.rocket:
+      command.append("-Rocket")
 
     self.setCommand(command)
     return ShellCommand.start(self)
