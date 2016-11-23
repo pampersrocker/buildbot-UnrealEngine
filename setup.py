@@ -10,7 +10,7 @@ setup(
     description="Easy configuration for the Unreal Automation Tool",
     author="Marvin Pohl",
     author_email="mp120@hdm-stuttgart.de",
-    url="https://github.com/pampersrocker/ue4-buildbot",
+    url="https://github.com/pampersrocker/buildbot-UnrealEngine",
     packages=["buildbot_UnrealEngine"],
     requires=["Buildbot (==0.9.1)"],
     setup_requires=['pytest-runner'],
