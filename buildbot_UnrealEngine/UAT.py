@@ -38,6 +38,7 @@ class BuildCookRun(ShellCommand):
       cook=None,
       cook_on_the_fly=None,
       build=False,
+      clean=False,
       #maps=True,
       **kwargs):
     self.engine_path=engine_path
@@ -51,6 +52,7 @@ class BuildCookRun(ShellCommand):
     self.cook_on_the_fly=cook_on_the_fly
     #self.build is apparently used somhwere internally for something else
     self.build_step=build
+    self.clean=clean
     if target_config not in self.supported_target_config:
       config.error("target_config '{0}' is not supported".format(self.target_config))
     if target_platform not in self.supported_target_platforms:
@@ -89,5 +91,8 @@ class BuildCookRun(ShellCommand):
     addArgIfSet(self.cook_on_the_fly, command, "-CookOnTheFly", "-SkipCookOnTheFly")
     if self.build_step == True:
       command.append("-Build")
+    if self.clean:
+      command.append("-Clean")
+
     self.setCommand(command)
     return ShellCommand.start(self)
