@@ -16,6 +16,8 @@ class BuildCookRun(ShellCommand):
   -cook -allmaps -compile -stage -pak -archive -archivedirectory=<ArchivePath> -Build -prereqs -package
   """
 
+  name="BuildCookRun"
+
   supported_target_platforms = ["Win32", "Win64", "Mac", "XboxOne", "PS4", "IOS", "Android", "HTML5", "Linux", "AllDesktop", "TVOS"]
   supported_target_config = ["Debug", "Development", "Test", "Shipping"]
 
