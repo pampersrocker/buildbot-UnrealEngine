@@ -1,5 +1,5 @@
 # -*- test-case-name: buildbot_UnrealEngine.test.test_BuildCookRun -*-
-from buildbot.steps.shell import ShellCommand
+from ..UnrealCommand import BaseUnrealCommand
 from buildbot import config
 
 from os import path
@@ -7,7 +7,7 @@ from os import path
 
 
 
-class BuildCookRun(ShellCommand):
+class BuildCookRun(BaseUnrealCommand):
 
   """
   Creates a command like
@@ -18,12 +18,8 @@ class BuildCookRun(ShellCommand):
 
   name="BuildCookRun"
 
-  supported_target_platforms = ["Win32", "Win64", "Mac", "XboxOne", "PS4", "IOS", "Android", "HTML5", "Linux", "AllDesktop", "TVOS"]
-  supported_target_config = ["Debug", "Development", "Test", "Shipping"]
 
   renderables = [
-    "project_path",
-    "engine_path",
     "target_platform",
     "target_config",
     "build_platform"
@@ -44,8 +40,7 @@ class BuildCookRun(ShellCommand):
       engine_type="Rocket",
       #maps=True,
       **kwargs):
-    self.engine_path=engine_path
-    self.project_path=project_path
+    BaseUnrealCommand.__init__(self, engine_path, project_path, **kwargs)
     self.target_platform=target_platform
     self.target_config=target_config
     self.build_platform=build_platform
@@ -65,7 +60,6 @@ class BuildCookRun(ShellCommand):
       config.error("target_platform '{0}' is not supported".format(self.target_platform))
     if build_platform not in ["Windows", "Linux", "Mac"]:
       config.error("build_platform '{0}' is not supported".format(self.build_platform))
-    ShellCommand.__init__(self, **kwargs)
 
   def getPlatformScriptExtension(self):
     if self.build_platform == "Windows":
@@ -103,4 +97,4 @@ class BuildCookRun(ShellCommand):
       command.append("-{0}".format(self.engine_type))
 
     self.setCommand(command)
-    return ShellCommand.start(self)
+    return BaseUnrealCommand.start(self)
