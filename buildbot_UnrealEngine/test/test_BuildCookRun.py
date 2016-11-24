@@ -54,6 +54,29 @@ class TestBuildCookRun(steps.BuildStepMixin, unittest.TestCase, configmixin.Conf
     self.expectOutcome(result=SUCCESS)
     return self.runStep()
 
+  def test_InvalidCommand_NoSanityChecks(self):
+    self.setupStep(
+      UAT.BuildCookRun("Here", "There", engine_type="Foo", do_sanity_checks=False)
+    )
+    self.expectCommands(
+      ExpectShell(
+        workdir="wkdir",
+        command=[
+          path.join("Here", "Engine", "Build", "BatchFiles", "RunUAT.bat"),
+          "BuildCookRun",
+          "-project=There",
+          "-targetplatform=Win64",
+          "-platform=Win64",
+          "-clientconfig=Development",
+          "-serverconfig=Development",
+          "-Foo"
+        ]
+      )
+      + 0
+    )
+    self.expectOutcome(result=SUCCESS)
+    return self.runStep()
+
   def test_BuildPlatformInvalid(self):
     self.assertRaisesConfigError(
             "build_platform 'Foo' is not supported",
