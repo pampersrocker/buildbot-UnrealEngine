@@ -2,6 +2,9 @@
 from ..UnrealCommand import BaseUnrealCommand
 from buildbot import config
 
+from twisted.python import failure
+from twisted.python import log
+
 from os import path
 
 
@@ -30,20 +33,16 @@ class BuildCookRun(BaseUnrealCommand):
       project_path,
       target_platform="Win64",
       target_config="Development",
-      build_platform="Windows",
       no_compile_editor=False,
       compile=None,
       cook=None,
       cook_on_the_fly=None,
       build=False,
       clean=False,
-      engine_type="Rocket",
       #maps=True,
       **kwargs):
-    BaseUnrealCommand.__init__(self, engine_path, project_path, **kwargs)
     self.target_platform=target_platform
     self.target_config=target_config
-    self.build_platform=build_platform
     self.no_compile_editor=no_compile_editor
     self.compile=compile
     self.cook=cook
@@ -51,27 +50,16 @@ class BuildCookRun(BaseUnrealCommand):
     #self.build is apparently used somhwere internally for something else
     self.build_step=build
     self.clean=clean
-    self.engine_type=engine_type
-    if engine_type not in ["Source", "Installed", "Rocket"]:
-      config.error("engine_type '{0}' is not supported".format(self.engine_type))
-    if target_config not in self.supported_target_config:
-      config.error("target_config '{0}' is not supported".format(self.target_config))
-    if target_platform not in self.supported_target_platforms:
-      config.error("target_platform '{0}' is not supported".format(self.target_platform))
-    if build_platform not in ["Windows", "Linux", "Mac"]:
-      config.error("build_platform '{0}' is not supported".format(self.build_platform))
+    BaseUnrealCommand.__init__(self, engine_path, project_path, **kwargs)
 
-  def getPlatformScriptExtension(self):
-    if self.build_platform == "Windows":
-      return "bat"
-    elif self.build_platform == "Linux":
-      return "sh"
-    elif self.build_platform == "Mac":
-      return "command"
-
+  def doSanityChecks(self):
+    BaseUnrealCommand.doSanityChecks(self)
+    if self.target_config not in self.supported_target_config:
+      config.error( "target_config '{0}' is not supported".format(self.target_config))
+    if self.target_platform not in self.supported_target_platforms:
+      config.error( "target_platform '{0}' is not supported".format(self.target_platform))
 
   def start(self):
-
     def addArgIfSet(flag, commandList, ifTrue, ifFalse):
       if flag == True:
         commandList.append(ifTrue)

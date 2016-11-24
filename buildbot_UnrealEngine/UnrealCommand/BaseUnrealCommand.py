@@ -19,6 +19,8 @@ class BaseUnrealCommand(ShellCommand):
 
   supported_target_platforms = ["Win32", "Win64", "Mac", "XboxOne", "PS4", "IOS", "Android", "HTML5", "Linux", "TVOS"]
   supported_target_config = ["Debug", "Development", "Test", "Shipping"]
+  supported_build_platforms = ["Windows", "Linux", "Mac"]
+  supported_engine_types = ["Source", "Installed", "Rocket"]
 
   name="BaseUnrealCommand"
 
@@ -26,7 +28,34 @@ class BaseUnrealCommand(ShellCommand):
       self,
       engine_path,
       project_path,
+      do_sanity_checks=True,
+      engine_type="Rocket",
+      build_platform="Windows",
       **kwargs):
     self.engine_path = engine_path
     self.project_path = project_path
+    self.build_platform=build_platform
+    self.do_sanity_checks=do_sanity_checks
+    self.engine_type=engine_type
     ShellCommand.__init__(self, **kwargs)
+    self.runSanityChecks()
+
+
+  def getPlatformScriptExtension(self):
+    if self.build_platform == "Windows":
+      return "bat"
+    elif self.build_platform == "Linux":
+      return "sh"
+    elif self.build_platform == "Mac":
+      return "command"
+
+  def runSanityChecks(self):
+    if self.do_sanity_checks:
+      self.doSanityChecks()
+
+
+  def doSanityChecks(self):
+    if isinstance(self.build_platform, str) and self.build_platform not in self.supported_build_platforms:
+      config.error("build_platform '{0}' is not supported".format(self.build_platform))
+    if isinstance(self.engine_type, str) and self.engine_type not in self.supported_engine_types:
+      config.error( "engine_type '{0}' is not supported".format(self.engine_type))
