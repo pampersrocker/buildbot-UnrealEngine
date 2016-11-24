@@ -65,7 +65,7 @@ class BuildCookRun(BaseUnrealCommand):
         commandList.append(ifTrue)
       elif flag == False:
         commandList.append(ifFalse)
-    command=[ path.join( self.engine_path, "Engine", "Build", "BatchFiles", "RunUAT.{0}".format(self.getPlatformScriptExtension()) )]
+    command=[ self.getEngineBatchFilesPath("RunUAT") ]
     command.append("BuildCookRun")
     command.append("-project={0}".format(self.project_path))
     command.append("-targetplatform={0}".format(self.target_platform))

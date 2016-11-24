@@ -1,6 +1,8 @@
 from buildbot.steps.shell import ShellCommand
 from buildbot import config
 
+from os import path
+
 class BaseUnrealCommand(ShellCommand):
 
   """
@@ -53,6 +55,8 @@ class BaseUnrealCommand(ShellCommand):
     if self.do_sanity_checks:
       self.doSanityChecks()
 
+  def getEngineBatchFilesPath(self, script):
+    return path.join( self.engine_path, "Engine", "Build", "BatchFiles", "{0}.{1}".format(script, self.getPlatformScriptExtension()) )
 
   def doSanityChecks(self):
     if isinstance(self.build_platform, str) and self.build_platform not in self.supported_build_platforms:
