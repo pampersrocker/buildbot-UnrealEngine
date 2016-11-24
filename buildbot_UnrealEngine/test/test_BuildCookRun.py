@@ -1,5 +1,5 @@
 
-from buildbot_UnrealEngine import UAT
+from buildbot_UnrealEngine import AutomationTool as UAT
 from buildbot.process.properties import Properties, Property
 
 from os import path
