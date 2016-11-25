@@ -17,7 +17,8 @@ setup(
     tests_require=['pytest'],
     entry_points= {
       'buildbot.steps': [
-        'BuildCookRun = buildbot_UnrealEngine.AutomationTool:BuildCookRun'
+        'BuildCookRun = buildbot_UnrealEngine.AutomationTool:BuildCookRun',
+        'UEBuild = buildbot_UnrealEngine.BuildTool:Build'
       ]
     }
 )
