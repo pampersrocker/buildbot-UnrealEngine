@@ -452,6 +452,8 @@ def targetPlatformTemplate(target_platform):
       )
       + 0
     )
+    self.expectOutcome(result=SUCCESS)
+    return self.runStep()
   return targetPlatformImplementation
 
 # Create test functions for all supported platforms
