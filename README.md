@@ -11,7 +11,7 @@ This enables the additional step commands as plugins inside buildbot (which are 
 
 # Usage
 
-```
+```py
 from buildbot.plugins import steps
 
 factory = util.BuildFactory()
