@@ -2,12 +2,21 @@
 
 from setuptools import setup
 
+long_description = ""
+
+try:
+    import pypandoc
+    long_description=pypandoc.convert_file("Readme.md", "rst")
+except ImportError:
+    long_description=open("Readme.md").read()
+
 VERSION="0.0.2"
 
 setup(
     name="buildbot_UnrealEngine",
     version=VERSION,
     description="Easy configuration for the Unreal Automation Tool",
+    long_description=long_description,
     author="Marvin Pohl",
     author_email="mp120@hdm-stuttgart.de",
     url="https://github.com/pampersrocker/buildbot-UnrealEngine",
@@ -20,5 +29,17 @@ setup(
         'BuildCookRun = buildbot_UnrealEngine.AutomationTool:BuildCookRun',
         'UEBuild = buildbot_UnrealEngine.BuildTool:Build'
       ]
-    }
+    },
+    classifiers=[
+        "Development Status :: 3 - Alpha",
+        "Environment :: Plugins",
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: Microsoft :: Windows",
+        "Operating System :: MacOS",
+        "Operating System :: POSIX :: Linux",
+        "Programming Language :: C++",
+        "Programming Language :: Python :: 2.7",
+        "Topic :: Software Development :: Build Tools",
+    ]
 )
