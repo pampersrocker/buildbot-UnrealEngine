@@ -2,13 +2,15 @@
 
 from setuptools import setup
 
-long_description = ""
+long_description ="""
+=========
+buildbot-UnrealEngine
+=========
 
-try:
-    import pypandoc
-    long_description=pypandoc.convert_file("Readme.md", "rst")
-except ImportError:
-    long_description=open("Readme.md").read()
+For documentation see: `Project Homepage`_
+
+.. _Project Homepage: https://github.com/pampersrocker/buildbot-UnrealEngine
+"""
 
 VERSION="0.0.3"
 
