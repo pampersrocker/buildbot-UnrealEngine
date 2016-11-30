@@ -1,6 +1,8 @@
 # buildbot-UnrealEngine
 Buildbot Plugin to run Commands using the Unreal Automation Tool
 
+[![PyPI version](https://badge.fury.io/py/buildbot-UnrealEngine.svg)](https://badge.fury.io/py/buildbot-UnrealEngine)
+
 # Installation
 
 ```
