@@ -10,7 +10,7 @@ try:
 except ImportError:
     long_description=open("Readme.md").read()
 
-VERSION="0.0.2"
+VERSION="0.0.3"
 
 setup(
     name="buildbot_UnrealEngine",
