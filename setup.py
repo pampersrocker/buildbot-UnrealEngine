@@ -10,7 +10,7 @@ buildbot-UnrealEngine
 For documentation see: `Project Homepage <https://github.com/pampersrocker/buildbot-UnrealEngine>`_
 """
 
-VERSION="0.0.4"
+VERSION="0.0.5"
 
 setup(
     name="buildbot_UnrealEngine",
