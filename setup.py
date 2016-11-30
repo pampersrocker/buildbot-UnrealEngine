@@ -7,9 +7,7 @@ long_description ="""
 buildbot-UnrealEngine
 =========
 
-For documentation see: `Project Homepage`_
-
-.. _Project Homepage: https://github.com/pampersrocker/buildbot-UnrealEngine
+For documentation see: `Project Homepage <https://github.com/pampersrocker/buildbot-UnrealEngine>`_
 """
 
 VERSION="0.0.4"
