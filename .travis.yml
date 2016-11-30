@@ -4,8 +4,8 @@ python:
 
 install:
   - pip install -U pip
-  - pip install -r requirements.txt
   - "pip install --no-binary :all: -r testrequirements.txt"
+  - pip install -r requirements.txt
   - pip install -e .
 
 script: "trial buildbot_UnrealEngine.test"
