@@ -22,8 +22,6 @@ setup(
     url="https://github.com/pampersrocker/buildbot-UnrealEngine",
     packages=["buildbot_UnrealEngine"],
     requires=["Buildbot (==0.9.1)"],
-    setup_requires=['pytest-runner'],
-    tests_require=['pytest'],
     entry_points= {
       'buildbot.steps': [
         'BuildCookRun = buildbot_UnrealEngine.AutomationTool:BuildCookRun',
