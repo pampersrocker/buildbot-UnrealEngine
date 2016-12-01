@@ -118,6 +118,48 @@ class TestBuild(steps.BuildStepMixin, unittest.TestCase, configmixin.ConfigError
     self.expectOutcome(result=SUCCESS)
     return self.runStep()
 
+  def test_RebuildClass(self):
+    self.setupStep(
+      UBT.Rebuild("Here", "There", "Target")
+    )
+    self.expectCommands(
+      ExpectShell(
+        workdir="wkdir",
+        command=[
+          path.join("Here", "Engine", "Build", "BatchFiles", "Rebuild.bat"),
+          "Target",
+          "Win64",
+          "Development",
+          "There",
+          "-WaitMutex",
+        ]
+      )
+      +0
+    )
+    self.expectOutcome(result=SUCCESS)
+    return self.runStep()
+
+
+  def test_CleanClass(self):
+    self.setupStep(
+      UBT.Clean("Here", "There", "Target")
+    )
+    self.expectCommands(
+      ExpectShell(
+        workdir="wkdir",
+        command=[
+          path.join("Here", "Engine", "Build", "BatchFiles", "Clean.bat"),
+          "Target",
+          "Win64",
+          "Development",
+          "There",
+          "-WaitMutex",
+        ]
+      )
+      +0
+    )
+    self.expectOutcome(result=SUCCESS)
+    return self.runStep()
 
 def buildTypeTemplate(build_type):
   def buildTypeImplementation(self):

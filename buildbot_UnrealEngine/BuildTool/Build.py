@@ -43,3 +43,24 @@ class Build(BaseUnrealCommand):
       config.error("target_platform '{0}' is not supported".format(self.target_platform))
 
     super(Build, self).doSanityChecks()
+
+class Rebuild(Build):
+  def __init__(
+      self,
+      engine_path,
+      project_path,
+      target,
+      **kwargs
+      ):
+    super(Rebuild, self).__init__(engine_path, project_path, target, build_type="Rebuild", **kwargs)
+
+
+class Clean(Build):
+  def __init__(
+      self,
+      engine_path,
+      project_path,
+      target,
+      **kwargs
+      ):
+    super(Clean, self).__init__(engine_path, project_path, target, build_type="Clean", **kwargs)
