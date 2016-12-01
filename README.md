@@ -18,6 +18,8 @@ from buildbot.plugins import steps
 
 factory = util.BuildFactory()
 
+###### Build commands
+
 factory.addStep(
   steps.UEBuild(
     "Engine_Location",
@@ -26,6 +28,26 @@ factory.addStep(
     # Additional Parameters, see below
   )
 )
+
+factory.addStep(
+  steps.UERebuild(
+    "Engine_Location",
+    "Path_To_Project.uproject",
+    "TargetName",
+    # Additional Parameters, see below
+  )
+)
+
+factory.addStep(
+  steps.UEClean(
+    "Engine_Location",
+    "Path_To_Project.uproject",
+    "TargetName",
+    # Additional Parameters, see below
+  )
+)
+
+###### BuildCookRun
 
 factory.addStep(
   steps.BuildCookRun(
