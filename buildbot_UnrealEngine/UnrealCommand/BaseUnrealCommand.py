@@ -20,7 +20,7 @@ class BaseUnrealCommand(ShellCommand):
 
 
   supported_target_platforms = ["Win32", "Win64", "Mac", "XboxOne", "PS4", "IOS", "Android", "HTML5", "Linux", "TVOS"]
-  supported_target_config = ["Debug", "Development", "Test", "Shipping"]
+  supported_target_config = ["Debug", "DebugGame", "Development", "Test", "Shipping"]
   supported_build_platforms = ["Windows", "Linux", "Mac"]
   supported_engine_types = ["Source", "Installed", "Rocket"]
 
