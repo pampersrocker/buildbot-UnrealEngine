@@ -21,11 +21,13 @@ setup(
     author_email="mp120@hdm-stuttgart.de",
     url="https://github.com/pampersrocker/buildbot-UnrealEngine",
     packages=["buildbot_UnrealEngine"],
-    requires=["Buildbot (==0.9.1)"],
+    requires=["Buildbot (>=0.9.1)"],
     entry_points= {
       'buildbot.steps': [
         'BuildCookRun = buildbot_UnrealEngine.AutomationTool:BuildCookRun',
-        'UEBuild = buildbot_UnrealEngine.BuildTool:Build'
+        'UEBuild = buildbot_UnrealEngine.BuildTool:Build',
+        'UERebuild = buildbot_UnrealEngine.BuildTool:Rebuild',
+        'UEClean = buildbot_UnrealEngine.BuildTool:Clean',
       ]
     },
     classifiers=[
