@@ -3,11 +3,13 @@
 from setuptools import setup
 
 long_description ="""
-=========
 buildbot-UnrealEngine
-=========
+=====================
 
-For documentation see: `Project Homepage <https://github.com/pampersrocker/buildbot-UnrealEngine>`_
+Documentation
+-------------
+
+See https://github.com/pampersrocker/buildbot-UnrealEngine for documentation.
 """
 
 VERSION="0.0.5"
