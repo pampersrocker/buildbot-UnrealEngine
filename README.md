@@ -1,7 +1,7 @@
 # buildbot-UnrealEngine
 Buildbot Plugin to run Commands using the Unreal Automation Tool
 
-[![PyPI version](https://badge.fury.io/py/buildbot-UnrealEngine.svg)](https://badge.fury.io/py/buildbot-UnrealEngine) [![Build Status](https://travis-ci.org/pampersrocker/buildbot-UnrealEngine.svg?branch=master)](https://travis-ci.org/pampersrocker/buildbot-UnrealEngine)
+[![PyPI version](https://badge.fury.io/py/buildbot-UnrealEngine.svg)](https://badge.fury.io/py/buildbot-UnrealEngine) [![Build Status](https://travis-ci.org/pampersrocker/buildbot-UnrealEngine.svg?branch=master)](https://travis-ci.org/pampersrocker/buildbot-UnrealEngine) [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/pampersrocker/buildbot-UnrealEngine/master/LICENSE)
 
 # Installation
 
