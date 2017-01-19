@@ -160,6 +160,12 @@ class TestBuild(
             target_config="Foo"
         )
 
+    def test_BuildTypeInvalid(self):
+        self.createConfigErrorTest(
+            "build_type 'Foo' is not supported",
+            build_type="Foo"
+        )
+
     def test_TargetPlatformInvalid(self):
         self.createConfigErrorTest(
             "target_platform 'Foo' is not supported",
@@ -250,7 +256,7 @@ def generateBuildPlatformTest(build_platform, ending):
     return BuildPlatformImplementation
 
 
-for platform, ending in[
+for platform, ending in [
         ("Windows", "bat"), ("Linux", "sh"), ("Mac", "command")]:
     setattr(
         TestBuild,
