@@ -35,7 +35,7 @@ def createExpectedShell(
         build_type="Build",
         target_platform="Win64",
         ending="bat"):
-    command = [
+    commands = [
         path.join(
             engine_path,
             "Engine",
@@ -48,12 +48,12 @@ def createExpectedShell(
         project_path,
     ]
     if(wait_mutex):
-        command.append("-WaitMutex")
+        commands.append("-WaitMutex")
     if(extra_arguments is not None):
-        command.extend(extra_arguments)
+        commands.extend(extra_arguments)
     return ExpectShell(
         workdir="wkdir",
-        command=command
+        command=commands
     ) + 0
 
 
