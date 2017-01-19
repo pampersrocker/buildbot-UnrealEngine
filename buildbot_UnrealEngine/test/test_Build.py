@@ -34,7 +34,8 @@ def createExpectedShell(
         wait_mutex=True,
         build_type="Build",
         target_platform="Win64",
-        ending="bat"):
+        ending="bat",
+        **kwargs):
     commands = [
         path.join(
             engine_path,
@@ -62,8 +63,37 @@ def createBuildCommand(
         project_path="There",
         target="Target",
         do_sanity_checks=True,
+        ending="bat",
         **kwargs):
     return UBT.Build(
+        engine_path,
+        project_path,
+        target,
+        do_sanity_checks=do_sanity_checks,
+        **kwargs)
+
+
+def createRebuildCommand(
+        engine_path="Here",
+        project_path="There",
+        target="Target",
+        do_sanity_checks=True,
+        **kwargs):
+    return UBT.Rebuild(
+        engine_path,
+        project_path,
+        target,
+        do_sanity_checks=do_sanity_checks,
+        **kwargs)
+
+
+def createCleanCommand(
+        engine_path="Here",
+        project_path="There",
+        target="Target",
+        do_sanity_checks=True,
+        **kwargs):
+    return UBT.Clean(
         engine_path,
         project_path,
         target,
@@ -96,101 +126,79 @@ class TestBuild(
     def tearDown(self):
         return self.tearDownBuildStep()
 
-    def test_TargetConfigInvalid(self):
+    def createConfigErrorTest(self, message, **kwargs):
         self.assertRaisesConfigError(
+            message,
+            createBuildCommandLambda(**kwargs)
+        )
+
+    def createBuildTest(self, expected=SUCCESS, **kwargs):
+        self.setupStep(createBuildCommand(**kwargs))
+        self.expectCommands(createExpectedShell(**kwargs))
+        self.expectOutcome(result=expected)
+        return self.runStep()
+
+    def createRebuildTest(self, expected=SUCCESS, **kwargs):
+        self.setupStep(createRebuildCommand(**kwargs))
+        self.expectCommands(createExpectedShell(
+            build_type="Rebuild",
+            **kwargs))
+        self.expectOutcome(result=expected)
+        return self.runStep()
+
+    def createCleanTest(self, expected=SUCCESS, **kwargs):
+        self.setupStep(createCleanCommand(**kwargs))
+        self.expectCommands(createExpectedShell(
+            build_type="Clean",
+            **kwargs))
+        self.expectOutcome(result=expected)
+        return self.runStep()
+
+    def test_TargetConfigInvalid(self):
+        self.createConfigErrorTest(
             "target_config 'Foo' is not supported",
-            createBuildCommandLambda(
-                target_config="Foo"
-            )
+            target_config="Foo"
         )
 
     def test_TargetPlatformInvalid(self):
-        self.assertRaisesConfigError(
+        self.createConfigErrorTest(
             "target_platform 'Foo' is not supported",
-            createBuildCommandLambda(
-                target_platform="Foo"
-            )
+            target_platform="Foo"
         )
 
     def test_BuildPlatformInvalid(self):
-        self.assertRaisesConfigError(
+        self.createConfigErrorTest(
             "build_platform 'Foo' is not supported",
-            createBuildCommandLambda(
-                build_platform="Foo"
-            )
+            build_platform="Foo"
         )
 
     def test_EngineTypeInvalid(self):
-        self.assertRaisesConfigError(
+        self.createConfigErrorTest(
             "engine_type 'Foo' is not supported",
-            createBuildCommandLambda(
-                engine_type="Foo"
-            )
+            engine_type="Foo"
         )
 
     def test_NoSanityChecks(self):
-        self.setupStep(
-            createBuildCommand(
-                do_sanity_checks=False,
-                target_config="Foo")
-        )
-        self.expectCommands(
-            createExpectedShell(target_config="Foo")
-        )
-        self.expectOutcome(result=SUCCESS)
-        return self.runStep()
+        return self.createBuildTest(
+            do_sanity_checks=False,
+            target_config="Foo")
 
     def test_WaitMutex(self):
-        self.setupStep(
-            createBuildCommand(wait_mutex=True)
-        )
-        self.expectCommands(
-            createExpectedShell(wait_mutex=True)
-        )
-        self.expectOutcome(result=SUCCESS)
-        return self.runStep()
+        return self.createBuildTest(wait_mutex=True)
 
     def test_NoWaitMutex(self):
-        self.setupStep(
-            UBT.Build("Here", "There", "Target", wait_mutex=False)
-        )
-        self.expectCommands(
-            createExpectedShell(wait_mutex=False)
-        )
-        self.expectOutcome(result=SUCCESS)
-        return self.runStep()
+        return self.createBuildTest(wait_mutex=False)
 
     def test_RebuildClass(self):
-        self.setupStep(
-            UBT.Rebuild("Here", "There", "Target")
-        )
-        self.expectCommands(
-            createExpectedShell(build_type="Rebuild")
-        )
-        self.expectOutcome(result=SUCCESS)
-        return self.runStep()
+        return self.createRebuildTest()
 
     def test_CleanClass(self):
-        self.setupStep(
-            UBT.Clean("Here", "There", "Target")
-        )
-        self.expectCommands(
-            createExpectedShell(build_type="Clean")
-        )
-        self.expectOutcome(result=SUCCESS)
-        return self.runStep()
+        return self.createCleanTest()
 
 
 def buildTypeTemplate(build_type):
     def buildTypeImplementation(self):
-        self.setupStep(
-            UBT.Build("Here", "There", "Target", build_type=build_type)
-        )
-        self.expectCommands(
-            createExpectedShell(build_type=build_type)
-        )
-        self.expectOutcome(result=SUCCESS)
-        return self.runStep()
+        return self.createBuildTest(build_type=build_type)
     return buildTypeImplementation
 
 
@@ -209,14 +217,7 @@ def targetPlatformTemplate(target_platform):
     and serverconfig is correctly set for the given platform
     """
     def targetPlatformImplementation(self):
-        self.setupStep(
-            createBuildCommand(target_platform=target_platform)
-        )
-        self.expectCommands(
-            createExpectedShell(target_platform=target_platform)
-        )
-        self.expectOutcome(result=SUCCESS)
-        return self.runStep()
+        return self.createBuildTest(target_platform=target_platform)
     return targetPlatformImplementation
 
 
@@ -230,14 +231,7 @@ for platform in UBT.Build.supported_target_platforms:
 
 def generateTargetConfigurationTest(target_config):
     def targetConfigurationImplementation(self):
-        self.setupStep(
-            createBuildCommand(target_config=target_config)
-        )
-        self.expectCommands(
-            createExpectedShell(target_config=target_config)
-        )
-        self.expectOutcome(result=SUCCESS)
-        return self.runStep()
+        return self.createBuildTest(target_config=target_config)
     return targetConfigurationImplementation
 
 
@@ -250,14 +244,9 @@ for config in UBT.Build.supported_target_config:
 
 def generateBuildPlatformTest(build_platform, ending):
     def BuildPlatformImplementation(self):
-        self.setupStep(
-            createBuildCommand(build_platform=build_platform)
-        )
-        self.expectCommands(
-            createExpectedShell(ending=ending)
-        )
-        self.expectOutcome(result=SUCCESS)
-        return self.runStep()
+        return self.createBuildTest(
+            build_platform=build_platform,
+            ending=ending)
     return BuildPlatformImplementation
 
 
