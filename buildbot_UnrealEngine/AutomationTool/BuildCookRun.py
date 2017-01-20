@@ -74,18 +74,17 @@ class BuildCookRun(BaseUnrealCommand):
         command.append("-platform={0}".format(self.target_platform))
         command.append("-clientconfig={0}".format(self.target_config))
         command.append("-serverconfig={0}".format(self.target_config))
-        if self.no_compile_editor:
-            command.append("-NoCompileEditor")
         addArgIfSet(self.compile, command, "-Compile", "-NoCompile")
         addArgIfSet(self.cook, command, "-Cook", "-SkipCook")
         addArgIfSet(self.cook_on_the_fly, command,
                     "-CookOnTheFly", "-SkipCookOnTheFly")
+        if self.engine_type != "Source":
+            command.append("-{0}".format(self.engine_type))
+        if self.no_compile_editor:
+            command.append("-NoCompileEditor")
         if self.build_step:
             command.append("-Build")
         if self.clean:
             command.append("-Clean")
-        if self.engine_type != "Source":
-            command.append("-{0}".format(self.engine_type))
-
         self.setCommand(command)
         return BaseUnrealCommand.start(self)

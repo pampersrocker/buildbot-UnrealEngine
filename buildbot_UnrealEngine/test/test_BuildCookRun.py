@@ -25,6 +25,58 @@ from buildbot.process.results import SUCCESS
 from buildbot.process.results import WARNINGS
 
 
+def createExpectedShell(
+        engine_path="Here",
+        project_path="There",
+        target_config="Development",
+        extra_arguments=None,
+        target_platform="Win64",
+        ending="bat",
+        engine_type="Rocket",
+        compile=None,
+        cook=None,
+        cook_on_the_fly=None,
+        **kwargs):
+    commands = [
+        path.join(
+            engine_path,
+            "Engine",
+            "Build",
+            "BatchFiles",
+            "RunUAT.{0}".format(ending)),
+        "BuildCookRun",
+        "-project={0}".format(project_path),
+        "-targetplatform={0}".format(target_platform),
+        "-platform={0}".format(target_platform),
+        "-clientconfig={0}".format(target_config),
+        "-serverconfig={0}".format(target_config)
+    ]
+    if(compile is True):
+        commands.append("-Compile")
+    elif(compile is False):
+        commands.append("-NoCompile")
+    if(cook is True):
+        commands.append("-Cook")
+    elif(cook is False):
+        commands.append("-SkipCook")
+    if(cook_on_the_fly is True):
+        commands.append("-CookOnTheFly")
+    elif(cook_on_the_fly is False):
+        commands.append("-SkipCookOnTheFly")
+    if(engine_type != "Source"):
+        commands.append("-{0}".format(engine_type))
+    if(extra_arguments is not None):
+        commands.extend(extra_arguments)
+    return ExpectShell(
+        workdir="wkdir",
+        command=commands
+    ) + 0
+
+
+def createBuildCommand(engine_path="Here", project_path="There", **kwargs):
+    return UAT.BuildCookRun(engine_path, project_path, **kwargs)
+
+
 class TestBuildCookRun(
         steps.BuildStepMixin,
         unittest.TestCase,
@@ -35,402 +87,116 @@ class TestBuildCookRun(
     def tearDown(self):
         return self.tearDownBuildStep()
 
-    def test_Command(self):
+    def createTest(
+            self,
+            extra_arguments=None,
+            expected=SUCCESS,
+            ending="bat",
+            **kwargs):
         self.setupStep(
-            UAT.BuildCookRun("Here", "There")
+            UAT.BuildCookRun("Here", "There", **kwargs)
         )
         self.expectCommands(
-            ExpectShell(
-                workdir="wkdir",
-                command=[
-                    path.join("Here", "Engine", "Build",
-                              "BatchFiles", "RunUAT.bat"),
-                    "BuildCookRun",
-                    "-project=There",
-                    "-targetplatform=Win64",
-                    "-platform=Win64",
-                    "-clientconfig=Development",
-                    "-serverconfig=Development",
-                    "-Rocket"
-                ]
-            ) + 0
+            createExpectedShell(
+                extra_arguments=extra_arguments,
+                ending=ending,
+                **kwargs)
         )
-        self.expectOutcome(result=SUCCESS)
+        self.expectOutcome(result=expected)
         return self.runStep()
+
+    def createConfigErrorTest(self, message, **kwargs):
+        return self.assertRaisesConfigError(
+            message,
+            lambda: createBuildCommand(**kwargs)
+        )
+
+    def test_Command(self):
+        return self.createTest()
 
     def test_InvalidCommand_NoSanityChecks(self):
-        self.setupStep(
-            UAT.BuildCookRun("Here", "There", engine_type="Foo",
-                             do_sanity_checks=False)
-        )
-        self.expectCommands(
-            ExpectShell(
-                workdir="wkdir",
-                command=[
-                    path.join("Here", "Engine", "Build",
-                              "BatchFiles", "RunUAT.bat"),
-                    "BuildCookRun",
-                    "-project=There",
-                    "-targetplatform=Win64",
-                    "-platform=Win64",
-                    "-clientconfig=Development",
-                    "-serverconfig=Development",
-                    "-Foo"
-                ]
-            ) + 0
-        )
-        self.expectOutcome(result=SUCCESS)
-        return self.runStep()
+        return self.createTest(engine_type="Foo", do_sanity_checks=False)
 
     def test_BuildPlatformInvalid(self):
-        self.assertRaisesConfigError(
+        return self.createConfigErrorTest(
             "build_platform 'Foo' is not supported",
-            lambda: UAT.BuildCookRun("Here", "There", build_platform="Foo"))
+            build_platform="Foo"
+        )
 
     def test_TargetConfigInvalid(self):
-        self.assertRaisesConfigError(
+        return self.createConfigErrorTest(
             "target_config 'Foo' is not supported",
-            lambda: UAT.BuildCookRun("Here", "There", target_config="Foo"))
+            target_config="Foo"
+        )
 
     def test_TargetPlatformInvalid(self):
-        self.assertRaisesConfigError(
+        return self.createConfigErrorTest(
             "target_platform 'Foo' is not supported",
-            lambda: UAT.BuildCookRun("Here", "There", target_platform="Foo"))
+            target_platform="Foo"
+        )
 
     def test_Build(self):
-        self.setupStep(
-            UAT.BuildCookRun("Here", "There", build=True)
-        )
-        self.expectCommands(
-            ExpectShell(
-                workdir="wkdir",
-                command=[
-                    path.join("Here", "Engine", "Build",
-                              "BatchFiles", "RunUAT.bat"),
-                    "BuildCookRun",
-                    "-project=There",
-                    "-targetplatform=Win64",
-                    "-platform=Win64",
-                    "-clientconfig=Development",
-                    "-serverconfig=Development",
-                    "-Build",
-                    "-Rocket"
-                ]
-            ) + 0
-        )
-        self.expectOutcome(result=SUCCESS)
-        return self.runStep()
+        return self.createTest(build=True, extra_arguments=["-Build"])
 
     def test_NoBuild(self):
-        self.setupStep(
-            UAT.BuildCookRun("Here", "There", build=False)
-        )
-        self.expectCommands(
-            ExpectShell(
-                workdir="wkdir",
-                command=[
-                    path.join("Here", "Engine", "Build",
-                              "BatchFiles", "RunUAT.bat"),
-                    "BuildCookRun",
-                    "-project=There",
-                    "-targetplatform=Win64",
-                    "-platform=Win64",
-                    "-clientconfig=Development",
-                    "-serverconfig=Development",
-                    "-Rocket"
-                ]
-            ) + 0
-        )
-        self.expectOutcome(result=SUCCESS)
-        return self.runStep()
+        return self.createTest(build=False)
 
     def test_Clean(self):
-        self.setupStep(
-            UAT.BuildCookRun("Here", "There", clean=True)
-        )
-        self.expectCommands(
-            ExpectShell(
-                workdir="wkdir",
-                command=[
-                    path.join("Here", "Engine", "Build",
-                              "BatchFiles", "RunUAT.bat"),
-                    "BuildCookRun",
-                    "-project=There",
-                    "-targetplatform=Win64",
-                    "-platform=Win64",
-                    "-clientconfig=Development",
-                    "-serverconfig=Development",
-                    "-Clean",
-                    "-Rocket"
-                ]
-            ) + 0
-        )
-        self.expectOutcome(result=SUCCESS)
-        return self.runStep()
+        return self.createTest(clean=True, extra_arguments=["-Clean"])
 
     def test_NoClean(self):
-        self.setupStep(
-            UAT.BuildCookRun("Here", "There", clean=False)
-        )
-        self.expectCommands(
-            ExpectShell(
-                workdir="wkdir",
-                command=[
-                    path.join("Here", "Engine", "Build",
-                              "BatchFiles", "RunUAT.bat"),
-                    "BuildCookRun",
-                    "-project=There",
-                    "-targetplatform=Win64",
-                    "-platform=Win64",
-                    "-clientconfig=Development",
-                    "-serverconfig=Development",
-                    "-Rocket"
-                ]
-            ) + 0
-        )
-        self.expectOutcome(result=SUCCESS)
-        return self.runStep()
+        return self.createTest(clean=False)
 
     def test_EngineTypeInvalid(self):
-        self.assertRaisesConfigError(
+        return self.createConfigErrorTest(
             "engine_type 'Foo' is not supported",
-            lambda: UAT.BuildCookRun("Here", "There", engine_type="Foo"))
+            engine_type="Foo"
+        )
 
     def test_EngineTypeInstalled(self):
-        self.setupStep(
-            UAT.BuildCookRun("Here", "There", engine_type="Installed")
-        )
-        self.expectCommands(
-            ExpectShell(
-                workdir="wkdir",
-                command=[
-                    path.join("Here", "Engine", "Build",
-                              "BatchFiles", "RunUAT.bat"),
-                    "BuildCookRun",
-                    "-project=There",
-                    "-targetplatform=Win64",
-                    "-platform=Win64",
-                    "-clientconfig=Development",
-                    "-serverconfig=Development",
-                    "-Installed"
-                ]
-            ) + 0
-        )
-        self.expectOutcome(result=SUCCESS)
-        return self.runStep()
+        return self.createTest(engine_type="Installed")
 
     def test_EngineTypeRocket(self):
-        self.setupStep(
-            UAT.BuildCookRun("Here", "There", engine_type="Rocket")
-        )
-        self.expectCommands(
-            ExpectShell(
-                workdir="wkdir",
-                command=[
-                    path.join("Here", "Engine", "Build",
-                              "BatchFiles", "RunUAT.bat"),
-                    "BuildCookRun",
-                    "-project=There",
-                    "-targetplatform=Win64",
-                    "-platform=Win64",
-                    "-clientconfig=Development",
-                    "-serverconfig=Development",
-                    "-Rocket"
-                ]
-            ) + 0
-        )
-        self.expectOutcome(result=SUCCESS)
-        return self.runStep()
+        return self.createTest(engine_type="Rocket")
 
     def test_EngineTypeSource(self):
-        self.setupStep(
-            UAT.BuildCookRun("Here", "There", engine_type="Source")
-        )
-        self.expectCommands(
-            ExpectShell(
-                workdir="wkdir",
-                command=[
-                    path.join("Here", "Engine", "Build",
-                              "BatchFiles", "RunUAT.bat"),
-                    "BuildCookRun",
-                    "-project=There",
-                    "-targetplatform=Win64",
-                    "-platform=Win64",
-                    "-clientconfig=Development",
-                    "-serverconfig=Development",
-                ]
-            ) + 0
-        )
-        self.expectOutcome(result=SUCCESS)
-        return self.runStep()
+        return self.createTest(engine_type="Source")
 
     def test_NoCompileEditor(self):
-        self.setupStep(
-            UAT.BuildCookRun("Here", "There", no_compile_editor=True)
+        return self.createTest(
+            no_compile_editor=True,
+            extra_arguments=["-NoCompileEditor"]
         )
-        self.expectCommands(
-            ExpectShell(
-                workdir="wkdir",
-                command=[
-                    path.join("Here", "Engine", "Build",
-                              "BatchFiles", "RunUAT.bat"),
-                    "BuildCookRun",
-                    "-project=There",
-                    "-targetplatform=Win64",
-                    "-platform=Win64",
-                    "-clientconfig=Development",
-                    "-serverconfig=Development",
-                    "-NoCompileEditor",
-                    "-Rocket"
-                ]
-            ) + 0
-        )
-        self.expectOutcome(result=SUCCESS)
-        return self.runStep()
 
     def test_Compile(self):
-        self.setupStep(
-            UAT.BuildCookRun("Here", "There", compile=True)
+        return self.createTest(
+            compile=True
         )
-        self.expectCommands(
-            ExpectShell(
-                workdir="wkdir",
-                command=[
-                    path.join("Here", "Engine", "Build",
-                              "BatchFiles", "RunUAT.bat"),
-                    "BuildCookRun",
-                    "-project=There",
-                    "-targetplatform=Win64",
-                    "-platform=Win64",
-                    "-clientconfig=Development",
-                    "-serverconfig=Development",
-                    "-Compile",
-                    "-Rocket"
-                ]
-            ) + 0
-        )
-        self.expectOutcome(result=SUCCESS)
-        return self.runStep()
-
-    def test_SkipCook(self):
-        self.setupStep(
-            UAT.BuildCookRun("Here", "There", cook=False)
-        )
-        self.expectCommands(
-            ExpectShell(
-                workdir="wkdir",
-                command=[
-                    path.join("Here", "Engine", "Build",
-                              "BatchFiles", "RunUAT.bat"),
-                    "BuildCookRun",
-                    "-project=There",
-                    "-targetplatform=Win64",
-                    "-platform=Win64",
-                    "-clientconfig=Development",
-                    "-serverconfig=Development",
-                    "-SkipCook",
-                    "-Rocket"
-                ]
-            ) + 0
-        )
-        self.expectOutcome(result=SUCCESS)
-        return self.runStep()
-
-    def test_Cook(self):
-        self.setupStep(
-            UAT.BuildCookRun("Here", "There", cook=True)
-        )
-        self.expectCommands(
-            ExpectShell(
-                workdir="wkdir",
-                command=[
-                    path.join("Here", "Engine", "Build",
-                              "BatchFiles", "RunUAT.bat"),
-                    "BuildCookRun",
-                    "-project=There",
-                    "-targetplatform=Win64",
-                    "-platform=Win64",
-                    "-clientconfig=Development",
-                    "-serverconfig=Development",
-                    "-Cook",
-                    "-Rocket"
-                ]
-            ) + 0
-        )
-        self.expectOutcome(result=SUCCESS)
-        return self.runStep()
-
-    def test_SkipCookOnTheFly(self):
-        self.setupStep(
-            UAT.BuildCookRun("Here", "There", cook_on_the_fly=False)
-        )
-        self.expectCommands(
-            ExpectShell(
-                workdir="wkdir",
-                command=[
-                    path.join("Here", "Engine", "Build",
-                              "BatchFiles", "RunUAT.bat"),
-                    "BuildCookRun",
-                    "-project=There",
-                    "-targetplatform=Win64",
-                    "-platform=Win64",
-                    "-clientconfig=Development",
-                    "-serverconfig=Development",
-                    "-SkipCookOnTheFly",
-                    "-Rocket"
-                ]
-            ) + 0
-        )
-        self.expectOutcome(result=SUCCESS)
-        return self.runStep()
-
-    def test_CookOnTheFly(self):
-        self.setupStep(
-            UAT.BuildCookRun("Here", "There", cook_on_the_fly=True)
-        )
-        self.expectCommands(
-            ExpectShell(
-                workdir="wkdir",
-                command=[
-                    path.join("Here", "Engine", "Build",
-                              "BatchFiles", "RunUAT.bat"),
-                    "BuildCookRun",
-                    "-project=There",
-                    "-targetplatform=Win64",
-                    "-platform=Win64",
-                    "-clientconfig=Development",
-                    "-serverconfig=Development",
-                    "-CookOnTheFly",
-                    "-Rocket"
-                ]
-            ) + 0
-        )
-        self.expectOutcome(result=SUCCESS)
-        return self.runStep()
 
     def test_NoCompile(self):
-        self.setupStep(
-            UAT.BuildCookRun("Here", "There", compile=False)
+        return self.createTest(
+            compile=False
         )
-        self.expectCommands(
-            ExpectShell(
-                workdir="wkdir",
-                command=[
-                    path.join("Here", "Engine", "Build",
-                              "BatchFiles", "RunUAT.bat"),
-                    "BuildCookRun",
-                    "-project=There",
-                    "-targetplatform=Win64",
-                    "-platform=Win64",
-                    "-clientconfig=Development",
-                    "-serverconfig=Development",
-                    "-NoCompile",
-                    "-Rocket"
-                ]
-            ) + 0
+
+    def test_SkipCook(self):
+        return self.createTest(
+            cook=False
         )
-        self.expectOutcome(result=SUCCESS)
-        return self.runStep()
+
+    def test_Cook(self):
+        return self.createTest(
+            cook=True
+        )
+
+    def test_SkipCookOnTheFly(self):
+        return self.createTest(
+            cook_on_the_fly=False
+        )
+
+    def test_CookOnTheFly(self):
+        return self.createTest(
+            cook_on_the_fly=True
+        )
 
 
 def targetPlatformTemplate(target_platform):
@@ -440,27 +206,9 @@ def targetPlatformTemplate(target_platform):
     """
 
     def targetPlatformImplementation(self):
-        self.setupStep(
-            UAT.BuildCookRun("Here", "There", target_platform=target_platform)
+        return self.createTest(
+            target_platform=target_platform
         )
-        self.expectCommands(
-            ExpectShell(
-                workdir="wkdir",
-                command=[
-                    path.join("Here", "Engine", "Build",
-                              "BatchFiles", "RunUAT.bat"),
-                    "BuildCookRun",
-                    "-project=There",
-                    "-targetplatform={0}".format(target_platform),
-                    "-platform={0}".format(target_platform),
-                    "-clientconfig=Development",
-                    "-serverconfig=Development",
-                    "-Rocket"
-                ]
-            ) + 0
-        )
-        self.expectOutcome(result=SUCCESS)
-        return self.runStep()
     return targetPlatformImplementation
 
 
@@ -472,27 +220,9 @@ for platform in UAT.BuildCookRun.supported_target_platforms:
 
 def generateTargetConfigurationTest(target_config):
     def targetConfigurationImplementation(self):
-        self.setupStep(
-            UAT.BuildCookRun("Here", "There", target_config=target_config)
+        return self.createTest(
+            target_config=target_config
         )
-        self.expectCommands(
-            ExpectShell(
-                workdir="wkdir",
-                command=[
-                    path.join("Here", "Engine", "Build",
-                              "BatchFiles", "RunUAT.bat"),
-                    "BuildCookRun",
-                    "-project=There",
-                    "-targetplatform=Win64",
-                    "-platform=Win64",
-                    "-clientconfig={0}".format(target_config),
-                    "-serverconfig={0}".format(target_config),
-                    "-Rocket"
-                ]
-            ) + 0
-        )
-        self.expectOutcome(result=SUCCESS)
-        return self.runStep()
     return targetConfigurationImplementation
 
 
@@ -503,27 +233,10 @@ for config in UAT.BuildCookRun.supported_target_config:
 
 def generateBuildPlatformTest(build_platform, ending):
     def BuildPlatformImplementation(self):
-        self.setupStep(
-            UAT.BuildCookRun("Here", "There", build_platform=build_platform)
+        return self.createTest(
+            build_platform=build_platform,
+            ending=ending
         )
-        self.expectCommands(
-            ExpectShell(
-                workdir="wkdir",
-                command=[
-                    path.join("Here", "Engine", "Build", "BatchFiles",
-                              "RunUAT.{0}".format(ending)),
-                    "BuildCookRun",
-                    "-project=There",
-                    "-targetplatform=Win64",
-                    "-platform=Win64",
-                    "-clientconfig=Development",
-                    "-serverconfig=Development",
-                    "-Rocket"
-                ]
-            ) + 0
-        )
-        self.expectOutcome(result=SUCCESS)
-        return self.runStep()
     return BuildPlatformImplementation
 
 
