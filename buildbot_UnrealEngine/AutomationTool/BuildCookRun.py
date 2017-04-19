@@ -14,8 +14,22 @@ class BuildCookRunLogLineObserver(UnrealLogLineObserver):
 
     _re_uat_warning = re.compile(r':Warning:')
     _re_cook = re.compile(r':LogCook:')
+    statusStartedLine = r'\*\*\*\*\*\*\*\*\*\* ' \
+        r'{0} COMMAND STARTED \*\*\*\*\*\*\*\*\*\*'
+    statusCompletedLine = r'\*\*\*\*\*\*\*\*\*\* {0} '\
+        r'COMMAND COMPLETED \*\*\*\*\*\*\*\*\*\*'
+    _re_build_started = re.compile(statusStartedLine.format('BUILD'))
+    _re_cook_started = re.compile(statusStartedLine.format('COOK'))
+    _re_package_started = re.compile(statusStartedLine.format('PACKAGE'))
+    _re_build_completed = re.compile(statusCompletedLine.format('BUILD'))
+    _re_cook_completed = re.compile(statusCompletedLine.format('COOK'))
+    _re_package_completed = re.compile(statusCompletedLine.format('PACKAGE'))
 
     nbCook = 0
+
+    isBuilding = False
+    isCooking = False
+    isPackaging = False
 
     logcook = None
 
@@ -24,6 +38,19 @@ class BuildCookRunLogLineObserver(UnrealLogLineObserver):
         UnrealLogLineObserver.__init__(self, logwarnings, logerrors, **kwargs)
 
     def outLineReceived(self, line):
+        if _re_build_started.search(line):
+            self.isBuilding = True
+        elif _re_cook_started.search(line):
+            self.isCooking = True
+        elif _re_package_started.search(line):
+            self.isPackaging = True
+        elif _re_build_completed.search(line):
+            self.isBuilding = False
+        elif _re_cook_completed.search(line):
+            self.isCooking = False
+        elif _re_package_completed.search(line):
+            self.isPackaging = False
+
         if self._re_cook.search(line):
             self.nbCook += 1
             self.logcook.addStdout("{0}\n".format(line))
@@ -31,6 +58,7 @@ class BuildCookRunLogLineObserver(UnrealLogLineObserver):
         if self._re_uat_warning.search(line):
             self.nbWarnings += 1
             self.logwarnings.addStdout("{0}\n".format(line))
+            self.step.setProgress('warnings', self.nbWarnings)
         else:
             UnrealLogLineObserver.outLineReceived(self, line)
 
@@ -132,3 +160,20 @@ class BuildCookRun(BaseUnrealCommand):
     def finished(self, result):
         self.getLog("cook").finish()
         BaseUnrealCommand.finished(self, result)
+
+    def describe(self, done=False):
+        description = [name]
+        if not done:
+            if self.logobserver.isBuilding:
+                description.append('is building')
+            if self.logobserver.isCooking:
+                description.append('is cooking')
+            if self.logobserver.isPackaging:
+                description.append('is packaging')
+            else:
+                description.append('is processing')
+        else:
+            description.append('built')
+        description.extend(
+            [self.getProjectFileName(), 'for', target_config, target_platform])
+        return description
