@@ -1,11 +1,37 @@
 # -*- test-case-name: buildbot_UnrealEngine.test.test_BuildCookRun -*-
-from ..UnrealCommand import BaseUnrealCommand
+from ..UnrealCommand import BaseUnrealCommand, UnrealLogLineObserver
 from buildbot import config
 
 from twisted.python import failure
 from twisted.python import log
 
 from os import path
+import re
+
+
+class BuildCookRunLogLineObserver(UnrealLogLineObserver):
+
+    _re_uat_warning = re.compile(r':Warning:')
+    _re_cook = re.compile(r':LogCook:')
+
+    nbCook = 0
+
+    logcook = None
+
+    def __init__(self, logwarnings, logerrors, logcook, **kwargs):
+        self.logcook = logcook
+        UnrealLogLineObserver.__init__(logwarnings, logerrors, **kwargs)
+
+    def outLineReceived(self, line):
+        if self._re_cook.search(line):
+            self.nbCook += 1
+            self.logcook.addStdout("{0}\n".format(line))
+            self.step.setProgress('cook', self.nbWarnings)
+        if self._re_uat_warning.search(line):
+            self.nbWarnings += 1
+            self.logwarnings.addStdout("{0}\n".format(line))
+        else:
+            UnrealLogLineObserver.outLineReceived(self, line)
 
 
 class BuildCookRun(BaseUnrealCommand):
@@ -88,3 +114,20 @@ class BuildCookRun(BaseUnrealCommand):
             command.append("-Clean")
         self.setCommand(command)
         return BaseUnrealCommand.start(self)
+
+    def setupLogfiles(self, cmd, logfiles):
+        logwarnings = self.addLog("warnings")
+        logerrors = self.addLog("errors")
+        logcook = self.addLog("cook")
+        self.logobserver = BuildCookRunLogLineObserver(
+            logwarnings, logerrors, logcook)
+        self.addLogObserver('stdio', self.logobserver)
+        ShellCommand.setupLogfiles(self, cmd, logfiles)
+
+    def createSummary(self, log):
+        self.setStatistic('cook', self.logobserver.nbCook)
+        BaseUnrealCommand.createSummary(self, log)
+
+    def finished(self, result):
+        self.getLog("cook").finish()
+        BaseUnrealCommand.finished(self, result)

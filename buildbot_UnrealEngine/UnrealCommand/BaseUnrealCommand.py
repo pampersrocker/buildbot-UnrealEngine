@@ -1,7 +1,20 @@
 from buildbot.steps.shell import ShellCommand
+from buildbot.steps.vstudio import MSLogLineObserver
 from buildbot import config
-
 from os import path
+import re
+
+
+class UnrealLogLineObserver(MSLogLineObserver):
+
+    _re_ubt_error = re.compile(r' ?error\s*: ')
+
+    def outLineReceived(self, line):
+        if self._re_ubt_error.search(line):
+            self.nbErrors += 1
+            self.logerrors.addStderr("%s\n" % line)
+        else:
+            MSLogLineObserver.outLineReceived(self, line)
 
 
 class BaseUnrealCommand(ShellCommand):
@@ -89,3 +102,45 @@ class BaseUnrealCommand(ShellCommand):
                 self.engine_type not in self.supported_engine_types):
             config.error(
                 "engine_type '{0}' is not supported".format(self.engine_type))
+
+    def setupLogfiles(self, cmd, logfiles):
+        logwarnings = self.addLog("warnings")
+        logerrors = self.addLog("errors")
+        self.logobserver = UnrealLogLineObserver(logwarnings, logerrors)
+        self.addLogObserver('stdio', self.logobserver)
+        ShellCommand.setupLogfiles(self, cmd, logfiles)
+
+    def describe(self, done=False):
+        description = ShellCommand.describe(self, done)
+        if done:
+            if not description:
+                description = [self.name]
+            description.append(
+                '{0} files'.format(self.getStatistic('files', 0)))
+            warnings = self.getStatistic('warnings', 0)
+            if warnings > 0:
+                description.append('{0} warnings'.format(warnings))
+            errors = self.getStatistic('errors', 0)
+            if errors > 0:
+                description.append('{0} errors'.format(errors))
+        return description
+
+    def createSummary(self, log):
+        self.setStatistic('files', self.logobserver.nbFiles)
+        self.setStatistic('warnings', self.logobserver.nbWarnings)
+        self.setStatistic('errors', self.logobserver.nbErrors)
+
+    def evaluateCommand(self, cmd):
+        if cmd.didFail():
+            return FAILURE
+        if self.logobserver.nbErrors > 0:
+            return FAILURE
+        if self.logobserver.nbWarnings > 0:
+            return WARNINGS
+        else:
+            return SUCCESS
+
+    def finished(self, result):
+        self.getLog("warnings").finish()
+        self.getLog("errors").finish()
+        ShellCommand.finished(self, result)

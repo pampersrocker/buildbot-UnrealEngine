@@ -1,1 +1,1 @@
-from .BaseUnrealCommand import BaseUnrealCommand
+from .BaseUnrealCommand import BaseUnrealCommand, UnrealLogLineObserver
