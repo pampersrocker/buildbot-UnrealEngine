@@ -1,5 +1,8 @@
 from buildbot.steps.shell import ShellCommand
 from buildbot.steps.vstudio import MSLogLineObserver
+from buildbot.process.results import FAILURE
+from buildbot.process.results import SUCCESS
+from buildbot.process.results import WARNINGS
 from buildbot import config
 from os import path
 import re

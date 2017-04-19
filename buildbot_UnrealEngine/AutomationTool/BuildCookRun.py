@@ -20,7 +20,7 @@ class BuildCookRunLogLineObserver(UnrealLogLineObserver):
 
     def __init__(self, logwarnings, logerrors, logcook, **kwargs):
         self.logcook = logcook
-        UnrealLogLineObserver.__init__(logwarnings, logerrors, **kwargs)
+        UnrealLogLineObserver.__init__(self, logwarnings, logerrors, **kwargs)
 
     def outLineReceived(self, line):
         if self._re_cook.search(line):
