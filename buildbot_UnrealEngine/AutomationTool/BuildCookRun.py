@@ -13,7 +13,7 @@ import re
 class BuildCookRunLogLineObserver(UnrealLogLineObserver):
 
     _re_uat_warning = re.compile(r':Warning:')
-    _re_cook = re.compile(r':LogCook:')
+    _re_cook = re.compile(r'LogCook:')
     statusStartedLine = '\*{{10}} {0} COMMAND STARTED \*{{10}}'
     statusCompletedLine = '\*{{10}} {0} COMMAND COMPLETED \*{{10}}'
     _re_build_started = re.compile(statusStartedLine.format('BUILD'))
