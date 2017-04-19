@@ -128,20 +128,15 @@ class BaseUnrealCommand(ShellCommand):
         self.addLogObserver('stdio', self.logobserver)
         ShellCommand.setupLogfiles(self, cmd, logfiles)
 
-    def describe(self, done=False):
-        description = [self.name]
-        if done:
-            if not description:
-                description = [self.name]
-            description.append(
-                '{0} files'.format(self.getStatistic('files', 0)))
-            warnings = self.getStatistic('warnings', 0)
-            if warnings > 0:
-                description.append('{0} warnings'.format(warnings))
-            errors = self.getStatistic('errors', 0)
-            if errors > 0:
-                description.append('{0} errors'.format(errors))
-        return description
+    def getDescriptionDetails(self):
+        details = ['{0} files'.format(self.getStatistic('files', 0))]
+        warnings = self.getStatistic('warnings', 0)
+        if warnings > 0:
+            details.append('{0} warnings'.format(warnings))
+        errors = self.getStatistic('errors', 0)
+        if errors > 0:
+            details.append('{0} errors'.format(errors))
+        return details
 
     def createSummary(self, log):
         self.setStatistic('files', self.logobserver.nbFiles)

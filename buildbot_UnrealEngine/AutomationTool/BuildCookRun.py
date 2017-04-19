@@ -14,10 +14,8 @@ class BuildCookRunLogLineObserver(UnrealLogLineObserver):
 
     _re_uat_warning = re.compile(r':Warning:')
     _re_cook = re.compile(r':LogCook:')
-    statusStartedLine = '\*\*\*\*\*\*\*\*\*\* ' \
-        '{0} COMMAND STARTED \*\*\*\*\*\*\*\*\*\*'
-    statusCompletedLine = '\*\*\*\*\*\*\*\*\*\* '\
-        '{0} COMMAND COMPLETED \*\*\*\*\*\*\*\*\*\*'
+    statusStartedLine = '\*{{10}} {0} COMMAND STARTED \*{{10}}'
+    statusCompletedLine = '\*{{10}} {0} COMMAND COMPLETED \*{{10}}'
     _re_build_started = re.compile(statusStartedLine.format('BUILD'))
     _re_cook_started = re.compile(statusStartedLine.format('COOK'))
     _re_package_started = re.compile(statusStartedLine.format('PACKAGE'))
@@ -178,4 +176,5 @@ class BuildCookRun(BaseUnrealCommand):
             'for',
             self.target_config,
             self.target_platform])
+        description.extend(self.getDescriptionDetails())
         return description

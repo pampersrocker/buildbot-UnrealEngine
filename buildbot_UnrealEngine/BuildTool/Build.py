@@ -40,6 +40,21 @@ class Build(BaseUnrealCommand):
         self.setCommand(command)
         return super(Build, self).start()
 
+    def describe(self, done=False):
+        description = [self.name]
+        if not done:
+            description.append("is building")
+        else:
+            description.append("built")
+        description.extend([
+            self.getProjectFileName(),
+            "for",
+            self.target_config,
+            self.target_platform
+        ])
+        description.extend(self.getDescriptionDetails())
+        return description
+
     def doSanityChecks(self):
         if (isinstance(self.build_type, str) and
                 self.build_type not in self.supported_build_types):
@@ -68,6 +83,8 @@ class Rebuild(Build):
         super(Rebuild, self).__init__(engine_path, project_path,
                                       target, build_type="Rebuild", **kwargs)
 
+    name = "UERebuild"
+
 
 class Clean(Build):
     def __init__(
@@ -79,3 +96,5 @@ class Clean(Build):
     ):
         super(Clean, self).__init__(engine_path, project_path,
                                     target, build_type="Clean", **kwargs)
+
+    name = "UEClean"
