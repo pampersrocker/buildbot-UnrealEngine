@@ -128,7 +128,7 @@ class BaseUnrealCommand(ShellCommand):
         ShellCommand.setupLogfiles(self, cmd, logfiles)
 
     def describe(self, done=False):
-        description = name
+        description = self.name
         if done:
             if not description:
                 description = [self.name]

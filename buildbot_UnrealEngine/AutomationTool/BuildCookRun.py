@@ -162,7 +162,7 @@ class BuildCookRun(BaseUnrealCommand):
         BaseUnrealCommand.finished(self, result)
 
     def describe(self, done=False):
-        description = [name]
+        description = [self.name]
         if not done:
             if self.logobserver.isBuilding:
                 description.append('is building')
