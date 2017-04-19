@@ -38,17 +38,17 @@ class BuildCookRunLogLineObserver(UnrealLogLineObserver):
         UnrealLogLineObserver.__init__(self, logwarnings, logerrors, **kwargs)
 
     def outLineReceived(self, line):
-        if _re_build_started.search(line):
+        if self._re_build_started.search(line):
             self.isBuilding = True
-        elif _re_cook_started.search(line):
+        elif self._re_cook_started.search(line):
             self.isCooking = True
-        elif _re_package_started.search(line):
+        elif self._re_package_started.search(line):
             self.isPackaging = True
-        elif _re_build_completed.search(line):
+        elif self._re_build_completed.search(line):
             self.isBuilding = False
-        elif _re_cook_completed.search(line):
+        elif self._re_cook_completed.search(line):
             self.isCooking = False
-        elif _re_package_completed.search(line):
+        elif self._re_package_completed.search(line):
             self.isPackaging = False
         elif self._re_cook.search(line):
             self.nbCook += 1
