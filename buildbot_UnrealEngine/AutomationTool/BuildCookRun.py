@@ -1,4 +1,5 @@
 # -*- test-case-name: buildbot_UnrealEngine.test.test_BuildCookRun -*-
+from buildbot.steps.shell import ShellCommand
 from ..UnrealCommand import BaseUnrealCommand, UnrealLogLineObserver
 from buildbot import config
 
