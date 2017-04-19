@@ -174,6 +174,9 @@ class BuildCookRun(BaseUnrealCommand):
                 description.append('is processing')
         else:
             description.append('built')
-        description.extend(
-            [self.getProjectFileName(), 'for', target_config, target_platform])
+        description.extend([
+            self.getProjectFileName(),
+            'for',
+            self.target_config,
+            self.target_platform])
         return description
