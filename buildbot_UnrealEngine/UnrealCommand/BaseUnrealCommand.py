@@ -11,11 +11,18 @@ import re
 class UnrealLogLineObserver(MSLogLineObserver):
 
     _re_ubt_error = re.compile(r' ?error\s*: ')
+    _re_clang_warning = re.compile(r':\s*warning\s*: ')
+    _re_clang_error = re.compile(r':\s*error\s*: ')
 
     def outLineReceived(self, line):
-        if self._re_ubt_error.search(line):
+        if (self._re_ubt_error.search(line) or
+           self._re_clang_error.search(line)):
             self.nbErrors += 1
             self.logerrors.addStderr("{0}\n".format(line))
+        if self._re_clang_warning.search(line):
+            self.nbWarnings += 1
+            self.logwarnings.addStdout("{0}\n".format(line))
+            self.step.setProgress('warnings', self.nbWarnings)
         else:
             MSLogLineObserver.outLineReceived(self, line)
 
@@ -96,6 +103,13 @@ class BaseUnrealCommand(ShellCommand):
             "BatchFiles",
             "{0}.{1}".format(script, self.getPlatformScriptExtension()))
 
+    def getProjectFileName(self):
+        projectName = self.project_path
+        splittedName = projectName.split("/")
+        if len(splittedName) >= 2:
+            projectName = splittedName[-1]
+        return projectName
+
     def doSanityChecks(self):
         if (isinstance(self.build_platform, str) and
                 self.build_platform not in self.supported_build_platforms):
@@ -114,7 +128,7 @@ class BaseUnrealCommand(ShellCommand):
         ShellCommand.setupLogfiles(self, cmd, logfiles)
 
     def describe(self, done=False):
-        description = ShellCommand.describe(self, done)
+        description = name
         if done:
             if not description:
                 description = [self.name]
