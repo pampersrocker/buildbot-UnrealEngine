@@ -15,7 +15,7 @@ class UnrealLogLineObserver(MSLogLineObserver):
     def outLineReceived(self, line):
         if self._re_ubt_error.search(line):
             self.nbErrors += 1
-            self.logerrors.addStderr("%s\n" % line)
+            self.logerrors.addStderr("{0}\n".format(line))
         else:
             MSLogLineObserver.outLineReceived(self, line)
 
