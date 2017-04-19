@@ -14,10 +14,10 @@ class BuildCookRunLogLineObserver(UnrealLogLineObserver):
 
     _re_uat_warning = re.compile(r':Warning:')
     _re_cook = re.compile(r':LogCook:')
-    statusStartedLine = r'\*\*\*\*\*\*\*\*\*\* ' \
-        r'{0} COMMAND STARTED \*\*\*\*\*\*\*\*\*\*'
-    statusCompletedLine = r'\*\*\*\*\*\*\*\*\*\* {0} '\
-        r'COMMAND COMPLETED \*\*\*\*\*\*\*\*\*\*'
+    statusStartedLine = '\*\*\*\*\*\*\*\*\*\* ' \
+        '{0} COMMAND STARTED \*\*\*\*\*\*\*\*\*\*'
+    statusCompletedLine = '\*\*\*\*\*\*\*\*\*\* '\
+        '{0} COMMAND COMPLETED \*\*\*\*\*\*\*\*\*\*'
     _re_build_started = re.compile(statusStartedLine.format('BUILD'))
     _re_cook_started = re.compile(statusStartedLine.format('COOK'))
     _re_package_started = re.compile(statusStartedLine.format('PACKAGE'))
@@ -50,12 +50,11 @@ class BuildCookRunLogLineObserver(UnrealLogLineObserver):
             self.isCooking = False
         elif _re_package_completed.search(line):
             self.isPackaging = False
-
-        if self._re_cook.search(line):
+        elif self._re_cook.search(line):
             self.nbCook += 1
             self.logcook.addStdout("{0}\n".format(line))
             self.step.setProgress('cook', self.nbWarnings)
-        if self._re_uat_warning.search(line):
+        elif self._re_uat_warning.search(line):
             self.nbWarnings += 1
             self.logwarnings.addStdout("{0}\n".format(line))
             self.step.setProgress('warnings', self.nbWarnings)

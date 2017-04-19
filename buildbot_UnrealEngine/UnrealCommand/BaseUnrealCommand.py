@@ -11,7 +11,7 @@ import re
 class UnrealLogLineObserver(MSLogLineObserver):
 
     _re_ubt_error = re.compile(r' ?error\s*: ')
-    _re_clang_warning = re.compile(r':\s*warning\s*: ')
+    _re_clang_warning = re.compile(r':\s*warning\s*:')
     _re_clang_error = re.compile(r':\s*error\s*: ')
 
     def outLineReceived(self, line):
@@ -19,7 +19,7 @@ class UnrealLogLineObserver(MSLogLineObserver):
            self._re_clang_error.search(line)):
             self.nbErrors += 1
             self.logerrors.addStderr("{0}\n".format(line))
-        if self._re_clang_warning.search(line):
+        elif self._re_clang_warning.search(line):
             self.nbWarnings += 1
             self.logwarnings.addStdout("{0}\n".format(line))
             self.step.setProgress('warnings', self.nbWarnings)
@@ -105,6 +105,7 @@ class BaseUnrealCommand(ShellCommand):
 
     def getProjectFileName(self):
         projectName = self.project_path
+        projectName = projectName.replace("\\", "/")
         splittedName = projectName.split("/")
         if len(splittedName) >= 2:
             projectName = splittedName[-1]
