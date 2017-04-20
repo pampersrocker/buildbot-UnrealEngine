@@ -14,14 +14,6 @@ class BuildCookRunLogLineObserver(UnrealLogLineObserver):
 
     _re_uat_warning = re.compile(r':Warning:')
     _re_cook = re.compile(r'LogCook:')
-    statusStartedLine = '\*{{10}} {0} COMMAND STARTED \*{{10}}'
-    statusCompletedLine = '\*{{10}} {0} COMMAND COMPLETED \*{{10}}'
-    _re_build_started = re.compile(statusStartedLine.format('BUILD'))
-    _re_cook_started = re.compile(statusStartedLine.format('COOK'))
-    _re_package_started = re.compile(statusStartedLine.format('PACKAGE'))
-    _re_build_completed = re.compile(statusCompletedLine.format('BUILD'))
-    _re_cook_completed = re.compile(statusCompletedLine.format('COOK'))
-    _re_package_completed = re.compile(statusCompletedLine.format('PACKAGE'))
 
     nbCook = 0
 
@@ -36,23 +28,11 @@ class BuildCookRunLogLineObserver(UnrealLogLineObserver):
         UnrealLogLineObserver.__init__(self, logwarnings, logerrors, **kwargs)
 
     def outLineReceived(self, line):
-        if self._re_build_started.search(line):
-            self.isBuilding = True
-        elif self._re_cook_started.search(line):
-            self.isCooking = True
-        elif self._re_package_started.search(line):
-            self.isPackaging = True
-        elif self._re_build_completed.search(line):
-            self.isBuilding = False
-        elif self._re_cook_completed.search(line):
-            self.isCooking = False
-        elif self._re_package_completed.search(line):
-            self.isPackaging = False
-        elif self._re_cook.search(line):
+        if self._re_cook.search(line):
             self.nbCook += 1
             self.logcook.addStdout("{0}\n".format(line))
             self.step.setProgress('cook', self.nbWarnings)
-        elif self._re_uat_warning.search(line):
+        if self._re_uat_warning.search(line):
             self.nbWarnings += 1
             self.logwarnings.addStdout("{0}\n".format(line))
             self.step.setProgress('warnings', self.nbWarnings)
@@ -160,21 +140,12 @@ class BuildCookRun(BaseUnrealCommand):
 
     def describe(self, done=False):
         description = [self.name]
-        if not done:
-            if self.logobserver.isBuilding:
-                description.append('is building')
-            if self.logobserver.isCooking:
-                description.append('is cooking')
-            if self.logobserver.isPackaging:
-                description.append('is packaging')
-            else:
-                description.append('is processing')
-        else:
-            description.append('built')
+        description.append('built' if done else 'is building')
         description.extend([
             self.getProjectFileName(),
             'for',
             self.target_config,
             self.target_platform])
-        description.extend(self.getDescriptionDetails())
+        if done:
+            description.extend(self.getDescriptionDetails())
         return description

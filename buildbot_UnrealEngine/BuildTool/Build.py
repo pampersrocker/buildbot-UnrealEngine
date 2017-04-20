@@ -42,17 +42,15 @@ class Build(BaseUnrealCommand):
 
     def describe(self, done=False):
         description = [self.name]
-        if not done:
-            description.append("is building")
-        else:
-            description.append("built")
+        description.append("built" if done else "is building")
         description.extend([
             self.getProjectFileName(),
             "for",
             self.target_config,
             self.target_platform
         ])
-        description.extend(self.getDescriptionDetails())
+        if done:
+            description.extend(self.getDescriptionDetails())
         return description
 
     def doSanityChecks(self):
