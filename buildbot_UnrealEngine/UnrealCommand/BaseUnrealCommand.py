@@ -1,4 +1,5 @@
 from buildbot.steps.shell import ShellCommand
+from buildbot.process.buildstep import LogLineObserver
 from buildbot.steps.vstudio import MSLogLineObserver
 from buildbot.process.results import FAILURE
 from buildbot.process.results import SUCCESS
@@ -7,7 +8,44 @@ from buildbot import config
 from os import path
 import re
 
-class UnrealLogLineObserver(MSLogLineObserver):
+class UnrealLogLineObserver(LogLineObserver):
+    nbFiles = 0
+    nbProjects = 0
+    nbWarnings = 0
+    nbErrors = 0
+
+    logwarnings = None
+    logerrors = None
+
+    _re_file = re.compile(r'^\[\d+/\d+\].*\.(cpp|c)$')
+    _re_ubt_error = re.compile(r' ?error\s*: ')
+    _re_clang_warning = re.compile(r':\s*warning\s*:')
+    _re_clang_error = re.compile(r':\s*error\s*: ')
+
+    def __init__(self, logwarnings, logerrors, **kwargs):
+        LogLineObserver.__init__(self, **kwargs)
+        self.logwarnings = logwarnings
+        self.logerrors = logerrors
+
+    def outLineReceived(self, line):
+        if self._re_file.search(line):
+            self.nbFiles += 1
+        LogLineObserver.outLineReceived(self, line)
+
+    def errLineReceived(self, line):
+        if (self._re_ubt_error.search(line) or 
+            self._re_clang_error.search(line)):
+            self.nbErrors += 1
+            self.logerrors.addStderr(" {0}\n".format(line))
+        elif self._re_clang_warning.search(line):
+            self.nbWarnings += 1
+            self.logwarnings.addStdout(" {0}\n".format(line))
+            self.step.setProgress('warnings', self.nbWarnings)
+        else:
+            LogLineObserver.outLineReceived(self, line)
+
+
+class UnrealMSLogLineObserver(MSLogLineObserver):
 
     _re_ubt_error = re.compile(r' ?error\s*: ')
     _re_clang_warning = re.compile(r':\s*warning\s*:')
@@ -125,7 +163,10 @@ class BaseUnrealCommand(ShellCommand):
     def setupLogfiles(self, cmd, logfiles):
         logwarnings = self.addLog("warnings")
         logerrors = self.addLog("errors")
-        self.logobserver = UnrealLogLineObserver(logwarnings, logerrors)
+        if self.build_platform == "Windows":
+            self.logobserver = UnrealMSLogLineObserver(logwarnings, logerrors)
+        else:
+            self.logobserver = UnrealLogLineObserver(logwarnings, logerrors)
         self.addLogObserver('stdio', self.logobserver)
         ShellCommand.setupLogfiles(self, cmd, logfiles)
 
