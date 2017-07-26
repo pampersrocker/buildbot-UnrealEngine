@@ -7,7 +7,6 @@ from buildbot import config
 from os import path
 import re
 
-
 class UnrealLogLineObserver(MSLogLineObserver):
 
     _re_ubt_error = re.compile(r' ?error\s*: ')
@@ -96,11 +95,13 @@ class BaseUnrealCommand(ShellCommand):
             self.doSanityChecks()
 
     def getEngineBatchFilesPath(self, script):
+        platform_dir = "" if self.build_platform == "Windows" else self.build_platform
         return path.join(
             self.engine_path,
             "Engine",
             "Build",
             "BatchFiles",
+            platform_dir,
             "{0}.{1}".format(script, self.getPlatformScriptExtension()))
 
     def getProjectFileName(self):
