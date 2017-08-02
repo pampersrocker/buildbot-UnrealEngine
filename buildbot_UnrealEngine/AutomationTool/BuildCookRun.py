@@ -14,6 +14,7 @@ class BuildCookRunLogLineObserver(UnrealLogLineObserver):
 
     _re_uat_warning = re.compile(r':Warning:')
     _re_cook = re.compile(r'LogCook:')
+    _re_cook_file = re.compile(r'LogCook:Display: Cooking')
 
     nbCook = 0
 
@@ -28,16 +29,16 @@ class BuildCookRunLogLineObserver(UnrealLogLineObserver):
         UnrealLogLineObserver.__init__(self, logwarnings, logerrors, **kwargs)
 
     def outLineReceived(self, line):
-        if self._re_cook.search(line):
-            self.nbCook += 1
-            self.logcook.addStdout("{0}\n".format(line))
-            self.step.setProgress('cook', self.nbWarnings)
         if self._re_uat_warning.search(line):
             self.nbWarnings += 1
             self.logwarnings.addStdout("{0}\n".format(line))
             self.step.setProgress('warnings', self.nbWarnings)
-        else:
-            UnrealLogLineObserver.outLineReceived(self, line)
+        if self._re_cook_file.search(line):
+            self.nbCook += 1
+            self.step.setProgress('cook', self.nbCook)
+        if self._re_cook.search(line):
+            self.logcook.addStdout("{0}\n".format(line))
+        UnrealLogLineObserver.outLineReceived(self, line)
 
 
 class BuildCookRun(BaseUnrealCommand):
@@ -57,7 +58,8 @@ class BuildCookRun(BaseUnrealCommand):
     renderables = [
         "target_platform",
         "target_config",
-        "build_platform"
+        "build_platform",
+        "archive_directory",
     ]
 
     def __init__(self,
@@ -71,7 +73,8 @@ class BuildCookRun(BaseUnrealCommand):
                  cook_on_the_fly=None,
                  build=False,
                  clean=False,
-                 # maps=True,
+                 archive=False,
+                 archive_directory=None,
                  **kwargs):
         self.target_platform = target_platform
         self.target_config = target_config
@@ -82,6 +85,8 @@ class BuildCookRun(BaseUnrealCommand):
         # self.build is apparently used somhwere internally for something else
         self.build_step = build
         self.clean = clean
+        self.archive = archive
+        self.archive_directory = archive_directory
         BaseUnrealCommand.__init__(self, engine_path, project_path, **kwargs)
 
     def doSanityChecks(self):
@@ -118,6 +123,11 @@ class BuildCookRun(BaseUnrealCommand):
             command.append("-Build")
         if self.clean:
             command.append("-Clean")
+        if self.archive:
+            command.append("-Archive")
+        if self.archive_directory is not None:
+            command.append(
+                "-ArchiveDirectory={0}".format(self.archive_directory))
         self.setCommand(command)
         return BaseUnrealCommand.start(self)
 
