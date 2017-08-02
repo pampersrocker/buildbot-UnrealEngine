@@ -34,14 +34,19 @@ def createExpectedShell(
         wait_mutex=True,
         build_type="Build",
         target_platform="Win64",
+        build_platform="Windows",
         ending="bat",
         **kwargs):
+    platform_script_dir = ""
+    if build_platform != "Windows":
+        platform_script_dir = build_platform
     commands = [
         path.join(
             engine_path,
             "Engine",
             "Build",
             "BatchFiles",
+            platform_script_dir,
             "{0}.{1}".format(build_type, ending)),
         target,
         target_platform,
@@ -255,7 +260,7 @@ def generateBuildPlatformTest(build_platform, ending):
 
 
 for platform, ending in [
-        ("Windows", "bat"), ("Linux", "sh"), ("Mac", "command")]:
+        ("Windows", "bat"), ("Linux", "sh"), ("Mac", "sh")]:
     setattr(
         TestBuild,
         "test_BuildPlatform{0}".format(platform),

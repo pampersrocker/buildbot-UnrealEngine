@@ -104,7 +104,8 @@ class BuildCookRun(BaseUnrealCommand):
                 commandList.append(ifTrue)
             elif flag is False:
                 commandList.append(ifFalse)
-        command = [self.getEngineBatchFilesPath("RunUAT")]
+        command = [self.getEngineBatchFilesPath(
+            "RunUAT", inside_platform_dir=False)]
         command.append("BuildCookRun")
         command.append("-project={0}".format(self.project_path))
         command.append("-targetplatform={0}".format(self.target_platform))

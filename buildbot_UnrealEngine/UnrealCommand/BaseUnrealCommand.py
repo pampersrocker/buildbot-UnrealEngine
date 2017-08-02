@@ -8,60 +8,36 @@ from buildbot import config
 from os import path
 import re
 
-class UnrealLogLineObserver(LogLineObserver):
-    nbFiles = 0
-    nbProjects = 0
-    nbWarnings = 0
-    nbErrors = 0
 
-    logwarnings = None
-    logerrors = None
+class UnrealLogLineObserver(MSLogLineObserver):
 
     _re_file = re.compile(r'^\[\d+/\d+\].*\.(cpp|c)$')
     _re_ubt_error = re.compile(r' ?error\s*: ')
     _re_clang_warning = re.compile(r':\s*warning\s*:')
     _re_clang_error = re.compile(r':\s*error\s*: ')
 
-    def __init__(self, logwarnings, logerrors, **kwargs):
-        LogLineObserver.__init__(self, **kwargs)
-        self.logwarnings = logwarnings
-        self.logerrors = logerrors
-
-    def outLineReceived(self, line):
-        if self._re_file.search(line):
-            self.nbFiles += 1
-        LogLineObserver.outLineReceived(self, line)
-
-    def errLineReceived(self, line):
-        if (self._re_ubt_error.search(line) or 
-            self._re_clang_error.search(line)):
-            self.nbErrors += 1
-            self.logerrors.addStderr(" {0}\n".format(line))
-        elif self._re_clang_warning.search(line):
-            self.nbWarnings += 1
-            self.logwarnings.addStdout(" {0}\n".format(line))
-            self.step.setProgress('warnings', self.nbWarnings)
-        else:
-            LogLineObserver.outLineReceived(self, line)
-
-
-class UnrealMSLogLineObserver(MSLogLineObserver):
-
-    _re_ubt_error = re.compile(r' ?error\s*: ')
-    _re_clang_warning = re.compile(r':\s*warning\s*:')
-    _re_clang_error = re.compile(r':\s*error\s*: ')
-
-    def outLineReceived(self, line):
+    def parseLine(self, line):
         if (self._re_ubt_error.search(line) or
            self._re_clang_error.search(line)):
             self.nbErrors += 1
             self.logerrors.addStderr("{0}\n".format(line))
+            return True
         elif self._re_clang_warning.search(line):
             self.nbWarnings += 1
             self.logwarnings.addStdout("{0}\n".format(line))
             self.step.setProgress('warnings', self.nbWarnings)
-        else:
-            MSLogLineObserver.outLineReceived(self, line)
+            return True
+        return False
+
+    def outLineReceived(self, line):
+        if(self._re_file.search(line)):
+            self.nbFiles += 1
+        if self.parseLine(line) is False:
+            super(UnrealLogLineObserver, self).outLineReceived(line)
+
+    def errLineReceived(self, line):
+        if self.parseLine(line) is False:
+            super(UnrealLogLineObserver, self).errLineReceived(line)
 
 
 class BaseUnrealCommand(ShellCommand):
@@ -120,10 +96,12 @@ class BaseUnrealCommand(ShellCommand):
         ShellCommand.__init__(self, **kwargs)
         self.runSanityChecks()
 
-    def getPlatformScriptExtension(self):
+    def getPlatformScriptExtension(self, inside_platform_dir=False):
         if self.build_platform == "Windows":
             return "bat"
-        elif self.build_platform == "Linux":
+        # Mac scripts use shell for scripts other than
+        # UAT and the Project level scripts
+        elif self.build_platform == "Linux" or inside_platform_dir:
             return "sh"
         elif self.build_platform == "Mac":
             return "command"
@@ -132,15 +110,19 @@ class BaseUnrealCommand(ShellCommand):
         if self.do_sanity_checks:
             self.doSanityChecks()
 
-    def getEngineBatchFilesPath(self, script):
-        platform_dir = "" if self.build_platform == "Windows" else self.build_platform
+    def getEngineBatchFilesPath(self, script, inside_platform_dir=False):
+        platform_dir = ""
+        # Windows is the main platform and has no platform specific dir
+        if inside_platform_dir and self.build_platform != "Windows":
+            platform_dir = self.build_platform
         return path.join(
             self.engine_path,
             "Engine",
             "Build",
             "BatchFiles",
             platform_dir,
-            "{0}.{1}".format(script, self.getPlatformScriptExtension()))
+            "{0}.{1}".format(
+                script, self.getPlatformScriptExtension(inside_platform_dir)))
 
     def getProjectFileName(self):
         projectName = self.project_path
@@ -163,10 +145,7 @@ class BaseUnrealCommand(ShellCommand):
     def setupLogfiles(self, cmd, logfiles):
         logwarnings = self.addLog("warnings")
         logerrors = self.addLog("errors")
-        if self.build_platform == "Windows":
-            self.logobserver = UnrealMSLogLineObserver(logwarnings, logerrors)
-        else:
-            self.logobserver = UnrealLogLineObserver(logwarnings, logerrors)
+        self.logobserver = UnrealLogLineObserver(logwarnings, logerrors)
         self.addLogObserver('stdio', self.logobserver)
         ShellCommand.setupLogfiles(self, cmd, logfiles)
 
