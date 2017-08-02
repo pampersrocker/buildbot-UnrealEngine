@@ -139,6 +139,11 @@ class BuildCookRun(BaseUnrealCommand):
         BaseUnrealCommand.finished(self, result)
 
     def describe(self, done=False):
+        if done is False:
+            self.setStatistic('cook', self.logobserver.nbCook)
+            self.setStatistic('warnings', self.logobserver.nbWarnings)
+            self.setStatistic('errors', self.logobserver.nbErrors)
+
         description = [self.name]
         description.append('built' if done else 'is building')
         description.extend([
@@ -146,6 +151,9 @@ class BuildCookRun(BaseUnrealCommand):
             'for',
             self.target_config,
             self.target_platform])
+        cook = self.getStatistic('cook', 0)
+        if cook > 0:
+            description.append("{0} files cooked")
         if done:
             description.extend(self.getDescriptionDetails())
         return description

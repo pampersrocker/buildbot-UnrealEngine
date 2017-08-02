@@ -50,8 +50,6 @@ def createExpectedShell(
     ]
     if(wait_mutex):
         commands.append("-WaitMutex")
-    if(extra_arguments is not None):
-        commands.extend(extra_arguments)
     return ExpectShell(
         workdir="wkdir",
         command=commands

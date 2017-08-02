@@ -27,7 +27,7 @@ from buildbot.process.results import WARNINGS
 
 def createExpectedShell(
         engine_path="Here",
-        project_path="There",
+        project_path="There/Project.uproject",
         target_config="Development",
         extra_arguments=None,
         target_platform="Win64",
@@ -73,7 +73,8 @@ def createExpectedShell(
     ) + 0
 
 
-def createBuildCommand(engine_path="Here", project_path="There", **kwargs):
+def createBuildCommand(
+        engine_path="Here", project_path="There/Project.uproject", **kwargs):
     return UAT.BuildCookRun(engine_path, project_path, **kwargs)
 
 
@@ -94,7 +95,7 @@ class TestBuildCookRun(
             ending="bat",
             **kwargs):
         self.setupStep(
-            UAT.BuildCookRun("Here", "There", **kwargs)
+            UAT.BuildCookRun("Here", "There/Project.uproject", **kwargs)
         )
         self.expectCommands(
             createExpectedShell(
@@ -197,6 +198,12 @@ class TestBuildCookRun(
         return self.createTest(
             cook_on_the_fly=True
         )
+
+    def test_Archive(self):
+        return self.createTest(archive=True, extra_arguments=["-Archive"])
+
+    def test_NoArchive(self):
+        return self.createTest(archive=False)
 
 
 def targetPlatformTemplate(target_platform):
