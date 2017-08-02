@@ -129,7 +129,10 @@ class BaseUnrealCommand(ShellCommand):
         ShellCommand.setupLogfiles(self, cmd, logfiles)
 
     def getDescriptionDetails(self):
-        details = ['{0} files'.format(self.getStatistic('files', 0))]
+        details = []
+        files = self.getStatistic('files', 0)
+        if files > 0:
+            details.append('{0} files'.format())
         warnings = self.getStatistic('warnings', 0)
         if warnings > 0:
             details.append('{0} warnings'.format(warnings))
