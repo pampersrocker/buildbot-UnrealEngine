@@ -305,6 +305,112 @@ class TestBuildCookRun(
     def test_NoArchive(self):
         return self.createTest(archive=False)
 
+    def test_ArhiveDirectory(self):
+            return self.createTest(
+                archive_directory="There/Archive",
+                extra_arguments=["-ArchiveDirectory=There/Archive"])
+
+    def test_P4(self):
+        return self.createTest(p4=True, extra_arguments=["-P4"])
+
+    def test_NoP4(self):
+        return self.createTest(p4=False, extra_arguments=["-NoP4"])
+
+    def test_UnversionedCookedConted(self):
+        return self.createTest(
+            unversioned_cooked_content=True,
+            extra_arguments=["-UnversionedCookedContent"])
+
+    def test_EncryptIniFiles(self):
+        return self.createTest(
+            encrypt_ini_files=True,
+            extra_arguments=["-EncryptIniFiles"]
+        )
+
+    def test_CreateReleaseVersion(self):
+        return self.createTest(
+            release_version="v1.2.3",
+            extra_arguments=["-CreateReleaseVersion=v1.2.3"]
+        )
+
+    def test_BasedOnReleaseVersion(self):
+        return self.createTest(
+            base_version="v1.2.3",
+            extra_arguments=["-BasedOnReleaseVersion=v1.2.3"]
+        )
+
+    def test_Compressed(self):
+        return self.createTest(
+            compressed=True,
+            extra_arguments=["-Compressed"]
+        )
+
+    def test_Distribution(self):
+        return self.createTest(
+            distribution=True,
+            extra_arguments=["-Distribution"]
+        )
+
+    def test_Iterate(self):
+        return self.createTest(
+            iterate=True,
+            extra_arguments=["-Iterate"]
+        )
+
+    def test_Run(self):
+        return self.createTest(
+            run=True,
+            extra_arguments=["-Run"]
+        )
+
+    def test_RunDevices(self):
+        return self.createTest(
+            devices=["PCA", "ConsoleB", "MobileC"],
+            extra_arguments=["-Device=PCA+ConsoleB+MobileC"]
+        )
+
+    def test_NullRHI(self):
+        return self.createTest(
+            null_rhi=True,
+            extra_arguments=["-NullRHI"]
+        )
+
+    def test_Nativize(self):
+        return self.createTest(
+            nativize=True,
+            extra_arguments=["-NativizeAssets"]
+        )
+
+    def test_Stage(self):
+        return self.createTest(
+            stage=True,
+            extra_arguments=["-Stage"]
+        )
+
+    def test_Map(self):
+        return self.createTest(
+            map=["MapA", "MapB", "MapC"],
+            extra_arguments=["-Map=MapA+MapB+MapC"]
+        )
+
+    def test_Pak(self):
+        return self.createTest(
+            pak=True,
+            extra_arguments=["-Pak"]
+        )
+
+    def test_Prereqs(self):
+        return self.createTest(
+            prereqs=True,
+            extra_arguments=["-Prereqs"]
+        )
+
+    def test_Package(self):
+        return self.createTest(
+            package=True,
+            extra_arguments=["-Package"]
+        )
+
 
 def targetPlatformTemplate(target_platform):
     """

@@ -75,6 +75,23 @@ class BuildCookRun(BaseUnrealCommand):
                  clean=False,
                  archive=False,
                  archive_directory=None,
+                 p4=None,
+                 unversioned_cooked_content=False,
+                 encrypt_ini_files=False,
+                 release_version=None,
+                 base_version=None,
+                 compressed=False,
+                 distribution=False,
+                 iterate=False,
+                 run=False,
+                 devices=None,
+                 null_rhi=False,
+                 nativize=False,
+                 stage=False,
+                 map=None,
+                 pak=False,
+                 prereqs=False,
+                 package=False,
                  **kwargs):
         self.target_platform = target_platform
         self.target_config = target_config
@@ -87,6 +104,23 @@ class BuildCookRun(BaseUnrealCommand):
         self.clean = clean
         self.archive = archive
         self.archive_directory = archive_directory
+        self.p4 = p4
+        self.unversioned_cooked_content = unversioned_cooked_content
+        self.encrypt_ini_files = encrypt_ini_files
+        self.release_version = release_version
+        self.base_version = base_version
+        self.compressed = compressed
+        self.distribution = distribution
+        self.iterate = iterate
+        self.run_step = run
+        self.devices = devices
+        self.null_rhi = null_rhi
+        self.nativize = nativize
+        self.stage = stage
+        self.map = map
+        self.pak = pak
+        self.prereqs = prereqs
+        self.package = package
         BaseUnrealCommand.__init__(self, engine_path, project_path, **kwargs)
 
     def doSanityChecks(self):
@@ -118,6 +152,7 @@ class BuildCookRun(BaseUnrealCommand):
                     "-CookOnTheFly", "-SkipCookOnTheFly")
         if self.engine_type != "Source":
             command.append("-{0}".format(self.engine_type))
+        addArgIfSet(self.p4, command, "-P4", "-NoP4")
         if self.no_compile_editor:
             command.append("-NoCompileEditor")
         if self.build_step:
@@ -129,6 +164,42 @@ class BuildCookRun(BaseUnrealCommand):
         if self.archive_directory is not None:
             command.append(
                 "-ArchiveDirectory={0}".format(self.archive_directory))
+        if self.unversioned_cooked_content:
+            command.append("-UnversionedCookedContent")
+        if self.encrypt_ini_files:
+            command.append("-EncryptIniFiles")
+        if self.release_version is not None:
+            command.append(
+                "-CreateReleaseVersion={0}".format(self.release_version))
+        if self.base_version:
+            command.append(
+                "-BasedOnReleaseVersion={0}".format(self.base_version))
+        if self.compressed:
+            command.append("-Compressed")
+        if self.distribution:
+            command.append("-Distribution")
+        if self.iterate:
+            command.append("-Iterate")
+        if self.run_step:
+            command.append("-Run")
+        if self.devices is not None:
+            command.append(
+                "-Device={0}".format("+".join(self.devices)))
+        if self.null_rhi:
+            command.append("-NullRHI")
+        if self.nativize:
+            command.append("-NativizeAssets")
+        if self.stage:
+            command.append("-Stage")
+        if self.map is not None:
+            command.append(
+                "-Map={0}".format("+".join(self.map)))
+        if self.pak:
+            command.append("-Pak")
+        if self.prereqs:
+            command.append("-Prereqs")
+        if self.package:
+            command.append("-Package")
         self.setCommand(command)
         return BaseUnrealCommand.start(self)
 
