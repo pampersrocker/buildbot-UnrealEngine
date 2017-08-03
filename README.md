@@ -21,40 +21,40 @@ factory = util.BuildFactory()
 ###### Build commands
 
 factory.addStep(
-  steps.UEBuild(
-    "Engine_Location",
-    "Path_To_Project.uproject",
-    "TargetName",
-    # Additional Parameters, see below
-  )
+    steps.UEBuild(
+        "Engine_Location",
+        "Path_To_Project.uproject",
+        "TargetName",
+        # Additional Parameters, see below
+    )
 )
 
 factory.addStep(
-  steps.UERebuild(
-    "Engine_Location",
-    "Path_To_Project.uproject",
-    "TargetName",
-    # Additional Parameters, see below
-  )
+    steps.UERebuild(
+        "Engine_Location",
+        "Path_To_Project.uproject",
+        "TargetName",
+        # Additional Parameters, see below
+    )
 )
 
 factory.addStep(
-  steps.UEClean(
-    "Engine_Location",
-    "Path_To_Project.uproject",
-    "TargetName",
-    # Additional Parameters, see below
-  )
+    steps.UEClean(
+        "Engine_Location",
+        "Path_To_Project.uproject",
+        "TargetName",
+        # Additional Parameters, see below
+    )
 )
 
 ###### BuildCookRun
 
 factory.addStep(
-  steps.BuildCookRun(
-    "Engine_Location",
-    "Path_To_Project.uproject",
-    # Additional Parameters, see below
-  )
+    steps.BuildCookRun(
+        "Engine_Location",
+        "Path_To_Project.uproject",
+        # Additional Parameters, see below
+    )
 )
 ```
 
@@ -69,7 +69,44 @@ All commands share the following base parameters:
 | build_platform | string (default `"Windows"`), Options: `"Windows"` `"Linux"` `"Mac"` | The platform on which the build itself will run, used to determine which scripts to run |
 | engine_type | string (default `"Rocket"`), Options: `"Source"` `"Installed"` `"Rocket"` | <p><ul><li>`Source`: Engine is built from GitHub Source</li><li>`Installed`: Engine is self build from GitHub source and made a binary build via the BuildGraph tool</li><li>`Rocket`: Pre-built engine from Epic Games via EpicGamesLauncher</li></ul></p> |
 
-# Build Cook Run Parameters:
+# Build Cook Run Parameters
+
+```py
+factory.addStep(
+    steps.BuildCookRun(
+        engine_path,
+        project_path,
+        target_platform="Win64",
+        target_config="Development",
+        no_compile_editor=False,
+        compile=None,
+        cook=None,
+        cook_on_the_fly=None,
+        build=False,
+        clean=False,
+        archive=False,
+        archive_directory=None,
+        p4=None,
+        unversioned_cooked_content=False,
+        encrypt_ini_files=False,
+        release_version=None,
+        base_version=None,
+        compressed=False,
+        distribution=False,
+        iterate=False,
+        run=False,
+        devices=None,
+        null_rhi=False,
+        nativize=False,
+        stage=False,
+        map=None,
+        pak=False,
+        prereqs=False,
+        package=False,
+    )
+)
+```
+
 | Parameter | Type/Options | Description |
 | --- | --- | --- |
 | no_compile_editor | bool | If true adds `-NoCompileEditor` to the command line. Skip compiling the editor target for game (needed for cooking), useful if already done before. |
