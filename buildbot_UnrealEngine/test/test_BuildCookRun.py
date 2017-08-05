@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 
 from buildbot_UnrealEngine import AutomationTool as UAT
 from buildbot.process.properties import Properties, Property, IRenderable
@@ -110,13 +111,33 @@ class TestBuildCookRunLogLineObserver(unittest.TestCase):
 
     def test_CookReceived(self):
         lines = [
-            "UE4Editor-Cmd: [2017.08.02-02.00.00:394][  0]LogCook:Display: Cooking /Game/SomeAssetReference -> C:/Path/To/Saved/Saved/Cooked/Win64/Project/Content/SomeAssetReference.uasset",
+            "UE4Editor-Cmd: [2017.08.02-02.00.00:394][  0]LogCook:Display: Cooking /Game/SomeAssetReference -> C:/Path/To/Saved/Cooked/Win64/Project/Content/SomeAssetReference.uasset",
         ]
         self.receiveLines(*lines)
         self.assertResult(
             nbCook=1,
             cook=lines,
             progress=dict(cook=1))
+
+    def test_UnicodeReceived(self):
+        lines = [
+            u"UE4Editor-Cmd: [2017.08.05-22.28.46:306][  0]LogCook:Display: Cooking /Game/stahlträger_LOW_N -> C:/Path/To/Saved/Cooked/Win64/Project/Content/stahlträger_LOW_N.uasset",
+        ]
+        self.receiveLines(*lines)
+        self.assertResult(
+            nbCook=1,
+            cook=lines,
+            progress=dict(cook=1))
+
+    def test_UnicodeErrorReceived(self):
+        lines = [
+            r"C:\Path\ToRepo\Source\Component.cpp(45): error C4003: ää not enough actual parameters for macro 'ensureAlwaysMsgf'",
+        ]
+        self.receiveLines(*lines)
+        self.assertResult(
+            nbErrors=1,
+            errors=[('e', l) for l in lines]
+        )
 
     def test_ErrorReceived(self):
         lines = [
