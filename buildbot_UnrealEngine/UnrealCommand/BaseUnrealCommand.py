@@ -20,11 +20,11 @@ class UnrealLogLineObserver(MSLogLineObserver):
         if (self._re_ubt_error.search(line) or
            self._re_clang_error.search(line)):
             self.nbErrors += 1
-            self.logerrors.addStderr("{0}\n".format(line))
+            self.logerrors.addStderr(u"{0}\n".format(line))
             return True
         elif self._re_clang_warning.search(line):
             self.nbWarnings += 1
-            self.logwarnings.addStdout("{0}\n".format(line))
+            self.logwarnings.addStdout(u"{0}\n".format(line))
             self.step.setProgress('warnings', self.nbWarnings)
             return True
         return False
