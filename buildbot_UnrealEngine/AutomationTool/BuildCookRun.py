@@ -60,6 +60,35 @@ class BuildCookRun(BaseUnrealCommand):
         "target_config",
         "build_platform",
         "archive_directory",
+        "release_version",
+        "base_version",
+        "target_platform",
+        "target_config",
+        "no_compile_editor",
+        "compile",
+        "cook",
+        "cook_on_the_fly",
+        "build_step",
+        "clean",
+        "archive",
+        "archive_directory",
+        "p4",
+        "unversioned_cooked_content",
+        "encrypt_ini_files",
+        "release_version",
+        "base_version",
+        "compressed",
+        "distribution",
+        "iterate",
+        "run_step",
+        "devices",
+        "null_rhi",
+        "nativize",
+        "stage",
+        "map",
+        "pak",
+        "prereqs",
+        "package",
     ]
 
     def __init__(self,
@@ -146,12 +175,12 @@ class BuildCookRun(BaseUnrealCommand):
         command.append("-platform={0}".format(self.target_platform))
         command.append("-clientconfig={0}".format(self.target_config))
         command.append("-serverconfig={0}".format(self.target_config))
+        if self.engine_type != "Source":
+            command.append("-{0}".format(self.engine_type))
         addArgIfSet(self.compile, command, "-Compile", "-NoCompile")
         addArgIfSet(self.cook, command, "-Cook", "-SkipCook")
         addArgIfSet(self.cook_on_the_fly, command,
                     "-CookOnTheFly", "-SkipCookOnTheFly")
-        if self.engine_type != "Source":
-            command.append("-{0}".format(self.engine_type))
         addArgIfSet(self.p4, command, "-P4", "-NoP4")
         if self.no_compile_editor:
             command.append("-NoCompileEditor")

@@ -1,6 +1,6 @@
 
 from buildbot_UnrealEngine import AutomationTool as UAT
-from buildbot.process.properties import Properties, Property
+from buildbot.process.properties import Properties, Property, IRenderable
 
 from os import path
 
@@ -15,6 +15,7 @@ from buildbot.test.util import gpo
 from buildbot.test.util import logging
 from buildbot.test.util import steps
 from buildbot.test.util import config as configmixin
+from buildbot.test.util.properties import ConstantRenderable
 
 from buildbot.test.fake.remotecommand import ExpectShell
 from buildbot.test.fake.remotecommand import Expect
@@ -23,6 +24,9 @@ from buildbot.process.results import FAILURE
 from buildbot.process.results import SKIPPED
 from buildbot.process.results import SUCCESS
 from buildbot.process.results import WARNINGS
+
+constant_true = ConstantRenderable(True)
+constant_false = ConstantRenderable(False)
 
 
 class TestBuildCookRunLogLineObserver(unittest.TestCase):
@@ -125,6 +129,13 @@ class TestBuildCookRunLogLineObserver(unittest.TestCase):
         )
 
 
+def renderableIsValue(renderable, value):
+    try:
+        return renderable.getRenderingFor(None) == value
+    except AttributeError:
+        return False
+
+
 def createExpectedShell(
         engine_path="Here",
         project_path="There/Project.uproject",
@@ -151,20 +162,21 @@ def createExpectedShell(
         "-clientconfig={0}".format(target_config),
         "-serverconfig={0}".format(target_config)
     ]
-    if(compile is True):
-        commands.append("-Compile")
-    elif(compile is False):
-        commands.append("-NoCompile")
-    if(cook is True):
-        commands.append("-Cook")
-    elif(cook is False):
-        commands.append("-SkipCook")
-    if(cook_on_the_fly is True):
-        commands.append("-CookOnTheFly")
-    elif(cook_on_the_fly is False):
-        commands.append("-SkipCookOnTheFly")
     if(engine_type != "Source"):
         commands.append("-{0}".format(engine_type))
+    if(compile is True or renderableIsValue(compile, True)):
+        commands.append("-Compile")
+    elif(compile is False or renderableIsValue(compile, False)):
+        commands.append("-NoCompile")
+    if(cook is True or renderableIsValue(cook, True)):
+        commands.append("-Cook")
+    elif(cook is False or renderableIsValue(cook, False)):
+        commands.append("-SkipCook")
+    if(cook_on_the_fly is True or renderableIsValue(cook_on_the_fly, True)):
+        commands.append("-CookOnTheFly")
+    elif(cook_on_the_fly is False or
+         renderableIsValue(cook_on_the_fly, False)):
+        commands.append("-SkipCookOnTheFly")
     if(extra_arguments is not None):
         commands.extend(extra_arguments)
     return ExpectShell(
@@ -408,6 +420,177 @@ class TestBuildCookRun(
     def test_Package(self):
         return self.createTest(
             package=True,
+            extra_arguments=["-Package"]
+        )
+
+    # Renderables
+    def test_Build_Renderable(self):
+        return self.createTest(build=constant_true, extra_arguments=["-Build"])
+
+    def test_NoBuild_Renderable(self):
+        return self.createTest(build=constant_false)
+
+    def test_Clean_Renderable(self):
+        return self.createTest(clean=constant_true, extra_arguments=["-Clean"])
+
+    def test_NoClean_Renderable(self):
+        return self.createTest(clean=constant_false)
+
+    def test_EngineTypeInstalled_Renderable(self):
+        return self.createTest(engine_type=ConstantRenderable("Installed"))
+
+    def test_EngineTypeRocket_Renderable(self):
+        return self.createTest(engine_type=ConstantRenderable("Rocket"))
+
+    def test_EngineTypeSource_Renderable(self):
+        return self.createTest(engine_type=ConstantRenderable("Source"))
+
+    def test_NoCompileEditor_Renderable(self):
+        return self.createTest(
+            no_compile_editor=constant_true,
+            extra_arguments=["-NoCompileEditor"]
+        )
+
+    def test_Compile_Renderable(self):
+        return self.createTest(
+            compile=constant_true
+        )
+
+    def test_NoCompile_Renderable(self):
+        return self.createTest(
+            compile=constant_false
+        )
+
+    def test_SkipCook_Renderable(self):
+        return self.createTest(
+            cook=constant_false
+        )
+
+    def test_Cook_Renderable(self):
+        return self.createTest(
+            cook=constant_true
+        )
+
+    def test_SkipCookOnTheFly_Renderable(self):
+        return self.createTest(
+            cook_on_the_fly=constant_false
+        )
+
+    def test_CookOnTheFly_Renderable(self):
+        return self.createTest(
+            cook_on_the_fly=constant_true
+        )
+
+    def test_Archive_Renderable(self):
+        return self.createTest(
+            archive=constant_true, extra_arguments=["-Archive"])
+
+    def test_NoArchive_Renderable(self):
+        return self.createTest(archive=constant_false)
+
+    def test_ArhiveDirectory_Renderable(self):
+            return self.createTest(
+                archive_directory=ConstantRenderable("There/Archive"),
+                extra_arguments=["-ArchiveDirectory=There/Archive"])
+
+    def test_P4_Renderable(self):
+        return self.createTest(p4=constant_true, extra_arguments=["-P4"])
+
+    def test_NoP4_Renderable(self):
+        return self.createTest(p4=constant_false, extra_arguments=["-NoP4"])
+
+    def test_UnversionedCookedConted_Renderable(self):
+        return self.createTest(
+            unversioned_cooked_content=constant_true,
+            extra_arguments=["-UnversionedCookedContent"])
+
+    def test_EncryptIniFiles_Renderable(self):
+        return self.createTest(
+            encrypt_ini_files=constant_true,
+            extra_arguments=["-EncryptIniFiles"]
+        )
+
+    def test_CreateReleaseVersion_Renderable(self):
+        return self.createTest(
+            release_version=ConstantRenderable("v1.2.3"),
+            extra_arguments=["-CreateReleaseVersion=v1.2.3"]
+        )
+
+    def test_BasedOnReleaseVersion_Renderable(self):
+        return self.createTest(
+            base_version=ConstantRenderable("v1.2.3"),
+            extra_arguments=["-BasedOnReleaseVersion=v1.2.3"]
+        )
+
+    def test_Compressed_Renderable(self):
+        return self.createTest(
+            compressed=constant_true,
+            extra_arguments=["-Compressed"]
+        )
+
+    def test_Distribution_Renderable(self):
+        return self.createTest(
+            distribution=constant_true,
+            extra_arguments=["-Distribution"]
+        )
+
+    def test_Iterate_Renderable(self):
+        return self.createTest(
+            iterate=constant_true,
+            extra_arguments=["-Iterate"]
+        )
+
+    def test_Run_Renderable(self):
+        return self.createTest(
+            run=constant_true,
+            extra_arguments=["-Run"]
+        )
+
+    def test_RunDevices_Renderable(self):
+        return self.createTest(
+            devices=ConstantRenderable(["PCA", "ConsoleB", "MobileC"]),
+            extra_arguments=["-Device=PCA+ConsoleB+MobileC"]
+        )
+
+    def test_NullRHI_Renderable(self):
+        return self.createTest(
+            null_rhi=constant_true,
+            extra_arguments=["-NullRHI"]
+        )
+
+    def test_Nativize_Renderable(self):
+        return self.createTest(
+            nativize=constant_true,
+            extra_arguments=["-NativizeAssets"]
+        )
+
+    def test_Stage_Renderable(self):
+        return self.createTest(
+            stage=constant_true,
+            extra_arguments=["-Stage"]
+        )
+
+    def test_Map_Renderable(self):
+        return self.createTest(
+            map=ConstantRenderable(["MapA", "MapB", "MapC"]),
+            extra_arguments=["-Map=MapA+MapB+MapC"]
+        )
+
+    def test_Pak_Renderable(self):
+        return self.createTest(
+            pak=constant_true,
+            extra_arguments=["-Pak"]
+        )
+
+    def test_Prereqs_Renderable(self):
+        return self.createTest(
+            prereqs=constant_true,
+            extra_arguments=["-Prereqs"]
+        )
+
+    def test_Package_Renderable(self):
+        return self.createTest(
+            package=constant_true,
             extra_arguments=["-Package"]
         )
 
