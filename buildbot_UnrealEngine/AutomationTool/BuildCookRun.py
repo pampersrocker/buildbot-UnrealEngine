@@ -264,7 +264,7 @@ class BuildCookRun(BaseUnrealCommand):
             self.target_platform])
         cook = self.getStatistic('cook', 0)
         if cook > 0:
-            description.append("{0} files cooked")
+            description.append("{0} files cooked".format(cook))
         if done:
             description.extend(self.getDescriptionDetails())
         return description
