@@ -12,7 +12,7 @@ Documentation
 See https://github.com/pampersrocker/buildbot-UnrealEngine for documentation.
 """
 
-VERSION = "0.3.3"
+VERSION = "0.3.4"
 
 setup(
     name="buildbot_UnrealEngine",
