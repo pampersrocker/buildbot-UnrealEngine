@@ -87,7 +87,7 @@ class TestBuildCookRunLogLineObserver(unittest.TestCase):
         self.unreal_log_observer.outLineReceived("random text\r\n")
         self.assertResult()
 
-    def test_OtherWarningReceived(self):
+    def test_OtherWarningReceived_4_15_(self):
         lines = [
             "UE4Editor-Cmd: [2017.08.02-13.26.13:327][  0]LogLinker:Warning: Can't find file '/Game/Test/Some/Asset'",
         ]
@@ -98,7 +98,18 @@ class TestBuildCookRunLogLineObserver(unittest.TestCase):
             warnings=lines,
             progress=dict(warnings=1))
 
-    def test_CookWarningReceived(self):
+    def test_OtherWarningReceived_4_17_(self):
+        lines = [
+            "Cook: LogScriptCore: Warning: Script Msg: Attempted to set an invalid index on array MaterialInstances [0/0]!",
+        ]
+        self.receiveLines(*lines)
+        self.assertResult(
+            nbWarnings=1,
+            nbCook=0,
+            warnings=lines,
+            progress=dict(warnings=1))
+
+    def test_CookWarningReceived_4_15(self):
         lines = [
             "UE4Editor-Cmd: [2017.08.02-13.27.51:616][  0]LogCook:Warning: Unable to find cached package name for package /Game/Some/Asset/Reference",
         ]
@@ -109,9 +120,19 @@ class TestBuildCookRunLogLineObserver(unittest.TestCase):
             cook=lines,
             progress=dict(warnings=1))
 
-    def test_CookReceived(self):
+    def test_CookReceived_4_15_(self):
         lines = [
             "UE4Editor-Cmd: [2017.08.02-02.00.00:394][  0]LogCook:Display: Cooking /Game/SomeAssetReference -> C:/Path/To/Saved/Cooked/Win64/Project/Content/SomeAssetReference.uasset",
+        ]
+        self.receiveLines(*lines)
+        self.assertResult(
+            nbCook=1,
+            cook=lines,
+            progress=dict(cook=1))
+
+    def test_CookReceived_4_17_(self):
+        lines = [
+            "Cook: LogCook: Display: Cooking /Game/SomeAssetReference -> C:/Path/To/Saved/Cooked/Win64/Project/Content/SomeAssetReference.uasset",
         ]
         self.receiveLines(*lines)
         self.assertResult(
@@ -149,6 +170,15 @@ class TestBuildCookRunLogLineObserver(unittest.TestCase):
             errors=[('e', l) for l in lines]
         )
 
+    def test_ErrorReceived_4_17(self):
+        lines = [
+            "Cook: LogBlueprint: Error: [Compiler SomeGameAsset] The property associated with  SomeComponent  could not be found from Source: /Game/Props/SomeAssetReference/",
+        ]
+        self.receiveLines(*lines)
+        self.assertResult(
+            nbErrors=1,
+            errors=[('e', l) for l in lines]
+        )
 
 def renderableIsValue(renderable, value):
     try:

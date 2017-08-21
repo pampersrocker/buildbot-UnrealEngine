@@ -12,9 +12,9 @@ import re
 
 class BuildCookRunLogLineObserver(UnrealLogLineObserver):
 
-    _re_uat_warning = re.compile(r':Warning:')
+    _re_uat_warning = re.compile(r':\s*Warning:')
     _re_cook = re.compile(r'LogCook:')
-    _re_cook_file = re.compile(r'LogCook:Display: Cooking')
+    _re_cook_file = re.compile(r'LogCook:\s*Display: Cooking')
 
     nbCook = 0
 

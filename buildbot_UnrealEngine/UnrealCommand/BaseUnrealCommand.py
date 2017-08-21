@@ -12,7 +12,7 @@ import re
 class UnrealLogLineObserver(MSLogLineObserver):
 
     _re_file = re.compile(r'^\[\d+/\d+\].*\.(cpp|c)$')
-    _re_ubt_error = re.compile(r' ?error\s*: ')
+    _re_ubt_error = re.compile(r' ?[Ee]rror\s*: ')
     _re_clang_warning = re.compile(r':\s*warning\s*:')
     _re_clang_error = re.compile(r':\s*error\s*: ')
 
