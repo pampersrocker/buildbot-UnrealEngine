@@ -103,6 +103,7 @@ factory.addStep(
         pak=False,
         prereqs=False,
         package=False,
+        crash_reporter=False,
     )
 )
 ```
@@ -134,6 +135,7 @@ factory.addStep(
 | pak | bool | If true adds `-Pak` to the command line. Use pak files for packaging, if omitted uassets file will be directly in the content directory. |
 | prereqs | bool | If true adds `-Prereqs` to the command line. Include prerequisites in the packaged game. |
 | package | bool | If true adds `-Package` to the command line. Package the game for the target platform (app file on Mac, apk on Android or ipa on iPhone) |
+| crash_reporter | bool | If true adds `-CrashReporter` to the command line. Includes the crash reporter during packaging. |
 
 
 # Development Setup under Windows
