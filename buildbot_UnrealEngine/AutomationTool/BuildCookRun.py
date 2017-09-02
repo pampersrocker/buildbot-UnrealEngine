@@ -89,6 +89,7 @@ class BuildCookRun(BaseUnrealCommand):
         "pak",
         "prereqs",
         "package",
+        "crash_reporter",
     ]
 
     def __init__(self,
@@ -121,6 +122,7 @@ class BuildCookRun(BaseUnrealCommand):
                  pak=False,
                  prereqs=False,
                  package=False,
+                 crash_reporter=False,
                  **kwargs):
         self.target_platform = target_platform
         self.target_config = target_config
@@ -150,6 +152,7 @@ class BuildCookRun(BaseUnrealCommand):
         self.pak = pak
         self.prereqs = prereqs
         self.package = package
+        self.crash_reporter = crash_reporter
         BaseUnrealCommand.__init__(self, engine_path, project_path, **kwargs)
 
     def doSanityChecks(self):
@@ -229,6 +232,8 @@ class BuildCookRun(BaseUnrealCommand):
             command.append("-Prereqs")
         if self.package:
             command.append("-Package")
+        if self.crash_reporter:
+            command.append("-CrashReporter")
         self.setCommand(command)
         return BaseUnrealCommand.start(self)
 

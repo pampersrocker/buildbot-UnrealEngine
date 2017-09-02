@@ -180,6 +180,7 @@ class TestBuildCookRunLogLineObserver(unittest.TestCase):
             errors=[('e', l) for l in lines]
         )
 
+
 def renderableIsValue(renderable, value):
     try:
         return renderable.getRenderingFor(None) == value
@@ -474,6 +475,12 @@ class TestBuildCookRun(
             extra_arguments=["-Package"]
         )
 
+    def test_CrashReporter(self):
+        return self.createTest(
+            crash_reporter=True,
+            extra_arguments=["-CrashReporter"]
+        )
+
     # Renderables
     def test_Build_Renderable(self):
         return self.createTest(build=constant_true, extra_arguments=["-Build"])
@@ -643,6 +650,12 @@ class TestBuildCookRun(
         return self.createTest(
             package=constant_true,
             extra_arguments=["-Package"]
+        )
+
+    def test_CrashReporter_Renderable(self):
+        return self.createTest(
+            crash_reporter=constant_true,
+            extra_arguments=["-CrashReporter"]
         )
 
 
