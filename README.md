@@ -104,6 +104,7 @@ factory.addStep(
         prereqs=False,
         package=False,
         crash_reporter=False,
+        title_id=None,
     )
 )
 ```
@@ -136,6 +137,7 @@ factory.addStep(
 | prereqs | bool | If true adds `-Prereqs` to the command line. Include prerequisites in the packaged game. |
 | package | bool | If true adds `-Package` to the command line. Package the game for the target platform (app file on Mac, apk on Android or ipa on iPhone) |
 | crash_reporter | bool | If true adds `-CrashReporter` to the command line. Includes the crash reporter during packaging. |
+| title_id | string or list of strings | If true adds `-TitleId=<Title+Id+Separated>` to the command line. PS4 specific title id command. |
 
 
 # Development Setup under Windows

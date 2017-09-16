@@ -90,6 +90,7 @@ class BuildCookRun(BaseUnrealCommand):
         "prereqs",
         "package",
         "crash_reporter",
+        "title_id",
     ]
 
     def __init__(self,
@@ -123,6 +124,7 @@ class BuildCookRun(BaseUnrealCommand):
                  prereqs=False,
                  package=False,
                  crash_reporter=False,
+                 title_id=None,
                  **kwargs):
         self.target_platform = target_platform
         self.target_config = target_config
@@ -152,6 +154,7 @@ class BuildCookRun(BaseUnrealCommand):
         self.pak = pak
         self.prereqs = prereqs
         self.package = package
+        self.title_id = title_id
         self.crash_reporter = crash_reporter
         BaseUnrealCommand.__init__(self, engine_path, project_path, **kwargs)
 
@@ -234,6 +237,11 @@ class BuildCookRun(BaseUnrealCommand):
             command.append("-Package")
         if self.crash_reporter:
             command.append("-CrashReporter")
+
+        if type(self.title_id) is list:
+            command.append("-TitleID={0}".format("+".join(self.title_id)))
+        elif self.title_id is not None:
+            command.append("-TitleID={0}".format(self.title_id))
         self.setCommand(command)
         return BaseUnrealCommand.start(self)
 

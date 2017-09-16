@@ -481,6 +481,18 @@ class TestBuildCookRun(
             extra_arguments=["-CrashReporter"]
         )
 
+    def test_TitleIdMulti(self):
+        return self.createTest(
+            title_id=["Title_ID_A", "Title_ID_B", "Title_ID_C"],
+            extra_arguments=["-TitleID=Title_ID_A+Title_ID_B+Title_ID_C"],
+        )
+
+    def test_TitleId(self):
+        return self.createTest(
+            title_id="Title_ID_A",
+            extra_arguments=["-TitleID=Title_ID_A"],
+        )
+
     # Renderables
     def test_Build_Renderable(self):
         return self.createTest(build=constant_true, extra_arguments=["-Build"])
@@ -656,6 +668,19 @@ class TestBuildCookRun(
         return self.createTest(
             crash_reporter=constant_true,
             extra_arguments=["-CrashReporter"]
+        )
+
+    def test_TitleIdMulti_Renderable(self):
+        return self.createTest(
+            title_id=ConstantRenderable(
+                ["Title_ID_A", "Title_ID_B", "Title_ID_C"]),
+            extra_arguments=["-TitleID=Title_ID_A+Title_ID_B+Title_ID_C"],
+        )
+
+    def test_TitleId_Renderable(self):
+        return self.createTest(
+            title_id=ConstantRenderable("Title_ID_A"),
+            extra_arguments=["-TitleID=Title_ID_A"],
         )
 
 
