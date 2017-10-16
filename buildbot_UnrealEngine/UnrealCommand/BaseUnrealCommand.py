@@ -153,7 +153,7 @@ class BaseUnrealCommand(ShellCommand):
         details = []
         files = self.getStatistic('files', 0)
         if files > 0:
-            details.append('{0} files'.format())
+            details.append('{0} files'.format(files))
         warnings = self.getStatistic('warnings', 0)
         if warnings > 0:
             details.append('{0} warnings'.format(warnings))
