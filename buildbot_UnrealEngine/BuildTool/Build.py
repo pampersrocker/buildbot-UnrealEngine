@@ -33,7 +33,8 @@ class Build(BaseUnrealCommand):
     @defer.inlineCallbacks
     def run(self):
         command = [
-            self.getEngineBatchFilesPath(self.build_type),
+            self.getEngineBatchFilesPath(
+                self.build_type, inside_platform_dir=True),
             self.target,
             self.target_platform,
             self.target_config,

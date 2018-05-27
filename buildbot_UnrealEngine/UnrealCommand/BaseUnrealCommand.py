@@ -10,23 +10,35 @@ import re
 
 class UnrealLogLineObserver(MSLogLineObserver):
 
-    _re_ubt_error = re.compile(r' ?error\s*: ')
+    _re_file = re.compile(r'^\[\d+/\d+\].*\.(cpp|c)$')
+    _re_ubt_error = re.compile(r' ?[Ee]rror\s*: ')
     _re_clang_warning = re.compile(r':\s*warning\s*:')
     _re_clang_error = re.compile(r':\s*error\s*: ')
 
-    def outLineReceived(self, line):
+    def parseLine(self, line):
         if (self._re_ubt_error.search(line) or
            self._re_clang_error.search(line)):
             self.nbErrors += 1
-            self.logerrors.addStderr("{0}\n".format(line))
+            self.logerrors.addStderr(u"{0}\n".format(line))
             self.step.updateSummary()
+            return True
         elif self._re_clang_warning.search(line):
             self.nbWarnings += 1
-            self.logwarnings.addStdout("{0}\n".format(line))
+            self.logwarnings.addStdout(u"{0}\n".format(line))
             self.step.setProgress('warnings', self.nbWarnings)
             self.step.updateSummary()
-        else:
-            MSLogLineObserver.outLineReceived(self, line)
+            return True
+        return False
+
+    def outLineReceived(self, line):
+        if(self._re_file.search(line)):
+            self.nbFiles += 1
+        if self.parseLine(line) is False:
+            super(UnrealLogLineObserver, self).outLineReceived(line)
+
+    def errLineReceived(self, line):
+        if self.parseLine(line) is False:
+            super(UnrealLogLineObserver, self).errLineReceived(line)
 
 
 class BaseUnrealCommand(ShellMixin, BuildStep):
@@ -86,10 +98,12 @@ class BaseUnrealCommand(ShellMixin, BuildStep):
         self.runSanityChecks()
         super(BaseUnrealCommand, self).__init__(**kwargs)
 
-    def getPlatformScriptExtension(self):
+    def getPlatformScriptExtension(self, inside_platform_dir=False):
         if self.build_platform == "Windows":
             return "bat"
-        elif self.build_platform == "Linux":
+        # Mac scripts use shell for scripts other than
+        # UAT and the Project level scripts
+        elif self.build_platform == "Linux" or inside_platform_dir:
             return "sh"
         elif self.build_platform == "Mac":
             return "command"
@@ -98,13 +112,19 @@ class BaseUnrealCommand(ShellMixin, BuildStep):
         if self.do_sanity_checks:
             self.doSanityChecks()
 
-    def getEngineBatchFilesPath(self, script):
+    def getEngineBatchFilesPath(self, script, inside_platform_dir=False):
+        platform_dir = ""
+        # Windows is the main platform and has no platform specific dir
+        if inside_platform_dir and self.build_platform != "Windows":
+            platform_dir = self.build_platform
         return path.join(
             self.engine_path,
             "Engine",
             "Build",
             "BatchFiles",
-            "{0}.{1}".format(script, self.getPlatformScriptExtension()))
+            platform_dir,
+            "{0}.{1}".format(
+                script, self.getPlatformScriptExtension(inside_platform_dir)))
 
     def getProjectFileName(self):
         projectName = self.project_path
@@ -131,7 +151,10 @@ class BaseUnrealCommand(ShellMixin, BuildStep):
         self.addLogObserver('stdio', self.logobserver)
 
     def getDescriptionDetails(self):
-        details = ['{0} files'.format(self.getStatistic('files', 0))]
+        details = []
+        files = self.getStatistic('files', 0)
+        if files > 0:
+            details.append('{0} files'.format(files))
         warnings = self.getStatistic('warnings', 0)
         if warnings > 0:
             details.append('{0} warnings'.format(warnings))

@@ -14,8 +14,9 @@ import re
 
 class BuildCookRunLogLineObserver(UnrealLogLineObserver):
 
-    _re_uat_warning = re.compile(r':Warning:')
+    _re_uat_warning = re.compile(r':\s*Warning:')
     _re_cook = re.compile(r'LogCook:')
+    _re_cook_file = re.compile(r'LogCook:\s*Display: Cooking')
 
     nbCook = 0
 
@@ -30,18 +31,19 @@ class BuildCookRunLogLineObserver(UnrealLogLineObserver):
         UnrealLogLineObserver.__init__(self, logwarnings, logerrors, **kwargs)
 
     def outLineReceived(self, line):
-        if self._re_cook.search(line):
-            self.nbCook += 1
-            self.logcook.addStdout("{0}\n".format(line))
-            self.step.setProgress('cook', self.nbWarnings)
             self.step.updateSummary()
         if self._re_uat_warning.search(line):
             self.nbWarnings += 1
-            self.logwarnings.addStdout("{0}\n".format(line))
+            self.logwarnings.addStdout(u"{0}\n".format(line))
             self.step.setProgress('warnings', self.nbWarnings)
+        if self._re_cook_file.search(line):
+            self.nbCook += 1
+            self.step.setProgress('cook', self.nbCook)
+			self.step.updateSummary()
+        if self._re_cook.search(line):
+            self.logcook.addStdout(u"{0}\n".format(line))
             self.step.updateSummary()
-        else:
-            UnrealLogLineObserver.outLineReceived(self, line)
+        UnrealLogLineObserver.outLineReceived(self, line)
 
 
 class BuildCookRun(BaseUnrealCommand):
@@ -61,7 +63,39 @@ class BuildCookRun(BaseUnrealCommand):
     renderables = [
         "target_platform",
         "target_config",
-        "build_platform"
+        "build_platform",
+        "archive_directory",
+        "release_version",
+        "base_version",
+        "target_platform",
+        "target_config",
+        "no_compile_editor",
+        "compile",
+        "cook",
+        "cook_on_the_fly",
+        "build_step",
+        "clean",
+        "archive",
+        "archive_directory",
+        "p4",
+        "unversioned_cooked_content",
+        "encrypt_ini_files",
+        "release_version",
+        "base_version",
+        "compressed",
+        "distribution",
+        "iterate",
+        "run_step",
+        "devices",
+        "null_rhi",
+        "nativize",
+        "stage",
+        "map",
+        "pak",
+        "prereqs",
+        "package",
+        "crash_reporter",
+        "title_id",
     ]
 
     def __init__(self,
@@ -75,7 +109,27 @@ class BuildCookRun(BaseUnrealCommand):
                  cook_on_the_fly=None,
                  build=False,
                  clean=False,
-                 # maps=True,
+                 archive=False,
+                 archive_directory=None,
+                 p4=None,
+                 unversioned_cooked_content=False,
+                 encrypt_ini_files=False,
+                 release_version=None,
+                 base_version=None,
+                 compressed=False,
+                 distribution=False,
+                 iterate=False,
+                 run=False,
+                 devices=None,
+                 null_rhi=False,
+                 nativize=False,
+                 stage=False,
+                 map=None,
+                 pak=False,
+                 prereqs=False,
+                 package=False,
+                 crash_reporter=False,
+                 title_id=None,
                  **kwargs):
         self.target_platform = target_platform
         self.target_config = target_config
@@ -86,6 +140,27 @@ class BuildCookRun(BaseUnrealCommand):
         # self.build is apparently used somhwere internally for something else
         self.build_step = build
         self.clean = clean
+        self.archive = archive
+        self.archive_directory = archive_directory
+        self.p4 = p4
+        self.unversioned_cooked_content = unversioned_cooked_content
+        self.encrypt_ini_files = encrypt_ini_files
+        self.release_version = release_version
+        self.base_version = base_version
+        self.compressed = compressed
+        self.distribution = distribution
+        self.iterate = iterate
+        self.run_step = run
+        self.devices = devices
+        self.null_rhi = null_rhi
+        self.nativize = nativize
+        self.stage = stage
+        self.map = map
+        self.pak = pak
+        self.prereqs = prereqs
+        self.package = package
+        self.title_id = title_id
+        self.crash_reporter = crash_reporter
         BaseUnrealCommand.__init__(self, engine_path, project_path, **kwargs)
 
     def doSanityChecks(self):
@@ -104,25 +179,75 @@ class BuildCookRun(BaseUnrealCommand):
                 commandList.append(ifTrue)
             elif flag is False:
                 commandList.append(ifFalse)
-        command = [self.getEngineBatchFilesPath("RunUAT")]
+        command = [self.getEngineBatchFilesPath(
+            "RunUAT", inside_platform_dir=False)]
         command.append("BuildCookRun")
         command.append("-project={0}".format(self.project_path))
         command.append("-targetplatform={0}".format(self.target_platform))
         command.append("-platform={0}".format(self.target_platform))
         command.append("-clientconfig={0}".format(self.target_config))
         command.append("-serverconfig={0}".format(self.target_config))
+        if self.engine_type != "Source":
+            command.append("-{0}".format(self.engine_type))
         addArgIfSet(self.compile, command, "-Compile", "-NoCompile")
         addArgIfSet(self.cook, command, "-Cook", "-SkipCook")
         addArgIfSet(self.cook_on_the_fly, command,
                     "-CookOnTheFly", "-SkipCookOnTheFly")
-        if self.engine_type != "Source":
-            command.append("-{0}".format(self.engine_type))
+        addArgIfSet(self.p4, command, "-P4", "-NoP4")
         if self.no_compile_editor:
             command.append("-NoCompileEditor")
         if self.build_step:
             command.append("-Build")
         if self.clean:
             command.append("-Clean")
+        if self.archive:
+            command.append("-Archive")
+        if self.archive_directory is not None:
+            command.append(
+                "-ArchiveDirectory={0}".format(self.archive_directory))
+        if self.unversioned_cooked_content:
+            command.append("-UnversionedCookedContent")
+        if self.encrypt_ini_files:
+            command.append("-EncryptIniFiles")
+        if self.release_version is not None:
+            command.append(
+                "-CreateReleaseVersion={0}".format(self.release_version))
+        if self.base_version:
+            command.append(
+                "-BasedOnReleaseVersion={0}".format(self.base_version))
+        if self.compressed:
+            command.append("-Compressed")
+        if self.distribution:
+            command.append("-Distribution")
+        if self.iterate:
+            command.append("-Iterate")
+        if self.run_step:
+            command.append("-Run")
+        if self.devices is not None:
+            command.append(
+                "-Device={0}".format("+".join(self.devices)))
+        if self.null_rhi:
+            command.append("-NullRHI")
+        if self.nativize:
+            command.append("-NativizeAssets")
+        if self.stage:
+            command.append("-Stage")
+        if self.map is not None:
+            command.append(
+                "-Map={0}".format("+".join(self.map)))
+        if self.pak:
+            command.append("-Pak")
+        if self.prereqs:
+            command.append("-Prereqs")
+        if self.package:
+            command.append("-Package")
+        if self.crash_reporter:
+            command.append("-CrashReporter")
+
+        if type(self.title_id) is list:
+            command.append("-TitleID={0}".format("+".join(self.title_id)))
+        elif self.title_id is not None:
+            command.append("-TitleID={0}".format(self.title_id))
         self.setupLogfiles()
         cmd = yield self.makeRemoteShellCommand(command=command)
         yield self.runCommand(cmd)
@@ -151,6 +276,9 @@ class BuildCookRun(BaseUnrealCommand):
             'for',
             self.target_config,
             self.target_platform])
+        cook = self.getStatistic('cook', 0)
+        if cook > 0:
+            description.append("{0} files cooked".format(cook))
         if done:
             description.extend(self.getDescriptionDetails())
         return description
