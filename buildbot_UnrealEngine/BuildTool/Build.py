@@ -3,6 +3,8 @@
 from ..UnrealCommand import BaseUnrealCommand
 from buildbot import config
 
+from twisted.internet import defer
+
 
 class Build(BaseUnrealCommand):
     """Runs the UnrealBuildTool (UBT)"""
@@ -28,7 +30,8 @@ class Build(BaseUnrealCommand):
         self.wait_mutex = wait_mutex
         super(Build, self).__init__(engine_path, project_path, **kwargs)
 
-    def start(self):
+    @defer.inlineCallbacks
+    def run(self):
         command = [
             self.getEngineBatchFilesPath(self.build_type),
             self.target,
@@ -37,10 +40,19 @@ class Build(BaseUnrealCommand):
             self.project_path]
         if self.wait_mutex:
             command.append("-WaitMutex")
-        self.setCommand(command)
-        return super(Build, self).start()
 
-    def describe(self, done=False):
+        self.setupLogfiles()
+        cmd = yield self.makeRemoteShellCommand(command=command)
+        yield self.runCommand(cmd)
+        defer.returnValue(cmd.results())
+
+    def getCurrentSummary(self):
+        return {"step": " ".join(self.getDescription(False))}
+
+    def getResultSummary(self):
+        return {"step": " ".join(self.getDescription(True))}
+
+    def getDescription(self, done=False):
         description = [self.name]
         description.append("built" if done else "is building")
         description.extend([

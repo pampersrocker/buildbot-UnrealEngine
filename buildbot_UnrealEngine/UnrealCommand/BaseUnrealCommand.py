@@ -1,4 +1,4 @@
-from buildbot.steps.shell import ShellCommand
+from buildbot.process.buildstep import BuildStep, ShellMixin
 from buildbot.steps.vstudio import MSLogLineObserver
 from buildbot.process.results import FAILURE
 from buildbot.process.results import SUCCESS
@@ -19,15 +19,17 @@ class UnrealLogLineObserver(MSLogLineObserver):
            self._re_clang_error.search(line)):
             self.nbErrors += 1
             self.logerrors.addStderr("{0}\n".format(line))
+            self.step.updateSummary()
         elif self._re_clang_warning.search(line):
             self.nbWarnings += 1
             self.logwarnings.addStdout("{0}\n".format(line))
             self.step.setProgress('warnings', self.nbWarnings)
+            self.step.updateSummary()
         else:
             MSLogLineObserver.outLineReceived(self, line)
 
 
-class BaseUnrealCommand(ShellCommand):
+class BaseUnrealCommand(ShellMixin, BuildStep):
 
     """
     Base class for all unreal related commands, holds basic parameters:
@@ -80,8 +82,9 @@ class BaseUnrealCommand(ShellCommand):
         self.build_platform = build_platform
         self.do_sanity_checks = do_sanity_checks
         self.engine_type = engine_type
-        ShellCommand.__init__(self, **kwargs)
+        kwargs = self.setupShellMixin(kwargs)
         self.runSanityChecks()
+        super(BaseUnrealCommand, self).__init__(**kwargs)
 
     def getPlatformScriptExtension(self):
         if self.build_platform == "Windows":
@@ -121,12 +124,11 @@ class BaseUnrealCommand(ShellCommand):
             config.error(
                 "engine_type '{0}' is not supported".format(self.engine_type))
 
-    def setupLogfiles(self, cmd, logfiles):
+    def setupLogfiles(self):
         logwarnings = self.addLog("warnings")
         logerrors = self.addLog("errors")
         self.logobserver = UnrealLogLineObserver(logwarnings, logerrors)
         self.addLogObserver('stdio', self.logobserver)
-        ShellCommand.setupLogfiles(self, cmd, logfiles)
 
     def getDescriptionDetails(self):
         details = ['{0} files'.format(self.getStatistic('files', 0))]
@@ -138,11 +140,6 @@ class BaseUnrealCommand(ShellCommand):
             details.append('{0} errors'.format(errors))
         return details
 
-    def createSummary(self, log):
-        self.setStatistic('files', self.logobserver.nbFiles)
-        self.setStatistic('warnings', self.logobserver.nbWarnings)
-        self.setStatistic('errors', self.logobserver.nbErrors)
-
     def evaluateCommand(self, cmd):
         if cmd.didFail():
             return FAILURE
@@ -152,8 +149,3 @@ class BaseUnrealCommand(ShellCommand):
             return WARNINGS
         else:
             return SUCCESS
-
-    def finished(self, result):
-        self.getLog("warnings").finish()
-        self.getLog("errors").finish()
-        ShellCommand.finished(self, result)

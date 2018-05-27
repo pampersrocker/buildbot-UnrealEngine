@@ -1,10 +1,12 @@
 # -*- test-case-name: buildbot_UnrealEngine.test.test_BuildCookRun -*-
-from buildbot.steps.shell import ShellCommand
+from buildbot.process.remotecommand import RemoteCommand
 from ..UnrealCommand import BaseUnrealCommand, UnrealLogLineObserver
 from buildbot import config
 
 from twisted.python import failure
 from twisted.python import log
+
+from twisted.internet import defer
 
 from os import path
 import re
@@ -32,10 +34,12 @@ class BuildCookRunLogLineObserver(UnrealLogLineObserver):
             self.nbCook += 1
             self.logcook.addStdout("{0}\n".format(line))
             self.step.setProgress('cook', self.nbWarnings)
+            self.step.updateSummary()
         if self._re_uat_warning.search(line):
             self.nbWarnings += 1
             self.logwarnings.addStdout("{0}\n".format(line))
             self.step.setProgress('warnings', self.nbWarnings)
+            self.step.updateSummary()
         else:
             UnrealLogLineObserver.outLineReceived(self, line)
 
@@ -93,7 +97,8 @@ class BuildCookRun(BaseUnrealCommand):
             config.error("target_platform '{0}' is not supported".format(
                 self.target_platform))
 
-    def start(self):
+    @defer.inlineCallbacks
+    def run(self):
         def addArgIfSet(flag, commandList, ifTrue, ifFalse):
             if flag is True:
                 commandList.append(ifTrue)
@@ -118,27 +123,27 @@ class BuildCookRun(BaseUnrealCommand):
             command.append("-Build")
         if self.clean:
             command.append("-Clean")
-        self.setCommand(command)
-        return BaseUnrealCommand.start(self)
+        self.setupLogfiles()
+        cmd = yield self.makeRemoteShellCommand(command=command)
+        yield self.runCommand(cmd)
+        defer.returnValue(self.evaluateCommand(cmd))
 
-    def setupLogfiles(self, cmd, logfiles):
+    def setupLogfiles(self):
         logwarnings = self.addLog("warnings")
         logerrors = self.addLog("errors")
         logcook = self.addLog("cook")
         self.logobserver = BuildCookRunLogLineObserver(
             logwarnings, logerrors, logcook)
         self.addLogObserver('stdio', self.logobserver)
-        ShellCommand.setupLogfiles(self, cmd, logfiles)
+        super(BuildCookRun, self).setupLogfiles()
 
-    def createSummary(self, log):
-        self.setStatistic('cook', self.logobserver.nbCook)
-        BaseUnrealCommand.createSummary(self, log)
+    def getCurrentSummary(self):
+        return {"step": " ".join(self.getDescription(False))}
 
-    def finished(self, result):
-        self.getLog("cook").finish()
-        BaseUnrealCommand.finished(self, result)
+    def getResultSummary(self):
+        return {"step": " ".join(self.getDescription(True))}
 
-    def describe(self, done=False):
+    def getDescription(self, done=False):
         description = [self.name]
         description.append('built' if done else 'is building')
         description.extend([
