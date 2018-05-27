@@ -31,15 +31,15 @@ class BuildCookRunLogLineObserver(UnrealLogLineObserver):
         UnrealLogLineObserver.__init__(self, logwarnings, logerrors, **kwargs)
 
     def outLineReceived(self, line):
-            self.step.updateSummary()
         if self._re_uat_warning.search(line):
             self.nbWarnings += 1
             self.logwarnings.addStdout(u"{0}\n".format(line))
             self.step.setProgress('warnings', self.nbWarnings)
+            self.step.updateSummary()
         if self._re_cook_file.search(line):
             self.nbCook += 1
             self.step.setProgress('cook', self.nbCook)
-			self.step.updateSummary()
+            self.step.updateSummary()
         if self._re_cook.search(line):
             self.logcook.addStdout(u"{0}\n".format(line))
             self.step.updateSummary()
