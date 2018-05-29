@@ -32,7 +32,10 @@ class VSLogLineObserver(LogLineObserver):
 
     @defer.inlineCallbacks
     def getOrCreateLog(self, logName):
-        currentLog = self.step.getLog(logName)
+        try:
+            currentLog = self.step.getLog(logName)
+        except KeyError:
+            pass
         if currentLog is None:
             currentLog = yield self.step.addLog(logName)
         defer.returnValue(currentLog)
