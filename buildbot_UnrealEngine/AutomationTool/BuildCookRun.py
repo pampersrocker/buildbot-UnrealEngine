@@ -260,7 +260,6 @@ class BuildCookRun(BaseUnrealCommand):
         self.logobserver = BuildCookRunLogLineObserver(
             logwarnings, logerrors, logcook)
         self.addLogObserver('stdio', self.logobserver)
-        super(BuildCookRun, self).setupLogfiles()
 
     def getCurrentSummary(self):
         return {"step": " ".join(self.getDescription(False))}
