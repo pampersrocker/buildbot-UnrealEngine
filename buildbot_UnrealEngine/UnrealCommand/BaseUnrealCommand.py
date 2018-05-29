@@ -35,7 +35,7 @@ class VSLogLineObserver(LogLineObserver):
         try:
             currentLog = self.step.getLog(logName)
         except KeyError:
-            pass
+            currentLog = None
         if currentLog is None:
             currentLog = yield self.step.addLog(logName)
         defer.returnValue(currentLog)
