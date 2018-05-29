@@ -22,21 +22,20 @@ class BuildCookRunLogLineObserver(UnrealLogLineObserver):
     def __init__(self, **kwargs):
         UnrealLogLineObserver.__init__(self, **kwargs)
 
+    @defer.inlineCallbacks
     def outLineReceived(self, line):
         if self._re_uat_warning.search(line):
             self.nbWarnings += 1
-            self.logwarnings = self.getOrCreateLog("warnings")
+            self.logwarnings = yield self.getOrCreateLog("warnings")
             self.logwarnings.addStdout(u"{0}\n".format(line))
             self.step.setProgress('warnings', self.nbWarnings)
             self.step.updateSummary()
         if self._re_cook_file.search(line):
             self.nbCook += 1
-            self.logcook = self.getOrCreateLog("cook")
-            self.logcook.addStdout(u"{0}\n".format(line))
             self.step.setProgress('cook', self.nbCook)
             self.step.updateSummary()
         if self._re_cook.search(line):
-            self.logcook = self.getOrCreateLog("cook")
+            self.logcook = yield self.getOrCreateLog("cook")
             self.logcook.addStdout(u"{0}\n".format(line))
         UnrealLogLineObserver.outLineReceived(self, line)
 
@@ -249,11 +248,7 @@ class BuildCookRun(BaseUnrealCommand):
         defer.returnValue(self.evaluateCommand(cmd))
 
     def setupLogfiles(self):
-        logwarnings = yield self.addLog("warnings")
-        logerrors = yield self.addLog("errors")
-        logcook = yield self.addLog("cook")
-        self.logobserver = BuildCookRunLogLineObserver(
-            logwarnings, logerrors, logcook)
+        self.logobserver = BuildCookRunLogLineObserver()
         self.addLogObserver('stdio', self.logobserver)
 
     def getCurrentSummary(self):

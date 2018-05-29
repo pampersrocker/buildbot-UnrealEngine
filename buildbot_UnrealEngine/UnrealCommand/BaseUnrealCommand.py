@@ -1,5 +1,5 @@
 from buildbot.process.buildstep import BuildStep, ShellMixin
-from buildbot.steps.vstudio import MSLogLineObserver
+from buildbot.process.buildstep import LogLineObserver
 from buildbot.process.results import FAILURE
 from buildbot.process.results import SUCCESS
 from buildbot.process.results import WARNINGS
@@ -9,7 +9,59 @@ import re
 from twisted.internet import defer
 
 
-class UnrealLogLineObserver(MSLogLineObserver):
+class VSLogLineObserver(LogLineObserver):
+
+    stdoutDelimiter = "\r\n"
+    stderrDelimiter = "\r\n"
+
+    _re_delimiter = re.compile(r'^(\d+>)?-{5}.+-{5}$')
+    _re_file = re.compile(r'^(\d+>)?[^ ]+\.(cpp|c)$')
+    _re_warning = re.compile(r' ?: warning [A-Z]+[0-9]+:')
+    _re_error = re.compile(r' ?error ([A-Z]+[0-9]+)?\s?: ')
+
+    nbFiles = 0
+    nbProjects = 0
+    nbWarnings = 0
+    nbErrors = 0
+
+    logwarnings = None
+    logerrors = None
+
+    def __init__(self, **kwargs):
+        LogLineObserver.__init__(self, **kwargs)
+
+    @defer.inlineCallbacks
+    def getOrCreateLog(self, logName):
+        currentLog = self.step.getLog(logName)
+        if currentLog is None:
+            currentLog = yield self.step.addLog(logName)
+        defer.returnValue(currentLog)
+
+    @defer.inlineCallbacks
+    def outLineReceived(self, line):
+        if self._re_delimiter.search(line):
+            self.nbProjects += 1
+            self.logwarnings = yield self.getOrCreateLog("warnings")
+            self.logwarnings.addStdout("%s\n" % line)
+            self.logerrors = yield self.getOrCreateLog("errors")
+            self.logerrors.addStdout("%s\n" % line)
+            self.step.setProgress('projects', self.nbProjects)
+        elif self._re_file.search(line):
+            self.nbFiles += 1
+            self.step.setProgress('files', self.nbFiles)
+        elif self._re_warning.search(line):
+            self.nbWarnings += 1
+            self.logwarnings = yield self.getOrCreateLog("warnings")
+            self.logwarnings.addStdout("%s\n" % line)
+            self.step.setProgress('warnings', self.nbWarnings)
+        elif self._re_error.search("%s\n" % line):
+            # error has no progress indication
+            self.nbErrors += 1
+            self.logerrors = yield self.getOrCreateLog("errors")
+            self.logerrors.addStderr("%s\n" % line)
+
+
+class UnrealLogLineObserver(VSLogLineObserver):
 
     _re_file = re.compile(r'^\[\d+/\d+\].*\.(cpp|c)$')
     _re_ubt_error = re.compile(r' ?[Ee]rror\s*: ')
@@ -17,33 +69,29 @@ class UnrealLogLineObserver(MSLogLineObserver):
     _re_clang_error = re.compile(r':\s*error\s*: ')
 
     @defer.inlineCallbacks
-    def getOrCreateLog(self, logName):
-        currentLog = self.step.getLog(logName)
-        if currentLog is None:
-            currentLog = yield self.step.addLog(logName)
-        return currentLog
-
     def parseLine(self, line):
         if (self._re_ubt_error.search(line) or
                 self._re_clang_error.search(line)):
             self.nbErrors += 1
-            self.logerrors = self.getOrCreateLog("errors")
+            self.logerrors = yield self.getOrCreateLog("errors")
             self.logerrors.addStderr(u"{0}\n".format(line))
             self.step.updateSummary()
-            return True
+            defer.returnValue(True)
         elif self._re_clang_warning.search(line):
             self.nbWarnings += 1
-            self.logwarnings = self.getOrCreateLog("warnings")
+            self.logwarnings = yield self.getOrCreateLog("warnings")
             self.logwarnings.addStdout(u"{0}\n".format(line))
             self.step.setProgress('warnings', self.nbWarnings)
             self.step.updateSummary()
-            return True
-        return False
+            defer.returnValue(True)
+        defer.returnValue(False)
 
+    @defer.inlineCallbacks
     def outLineReceived(self, line):
         if(self._re_file.search(line)):
             self.nbFiles += 1
-        if self.parseLine(line) is False:
+        result = yield self.parseLine(line)
+        if result is False:
             super(UnrealLogLineObserver, self).outLineReceived(line)
 
     def errLineReceived(self, line):
@@ -155,9 +203,7 @@ class BaseUnrealCommand(ShellMixin, BuildStep):
                 "engine_type '{0}' is not supported".format(self.engine_type))
 
     def setupLogfiles(self):
-        logwarnings = self.addLog("warnings")
-        logerrors = self.addLog("errors")
-        self.logobserver = UnrealLogLineObserver(logwarnings, logerrors)
+        self.logobserver = UnrealLogLineObserver()
         self.addLogObserver('stdio', self.logobserver)
 
     def getDescriptionDetails(self):

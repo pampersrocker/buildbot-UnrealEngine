@@ -50,11 +50,20 @@ class TestBuildCookRunLogLineObserver(unittest.TestCase):
             lambda l: self.errors.append(('e', l.rstrip()))
 
         self.unreal_log_observer = \
-            UAT.BuildCookRunLogLineObserver(
-                mocked_warnings, mocked_errors, mocked_cook)
+            UAT.BuildCookRunLogLineObserver()
 
         self.progress = {}
         self.unreal_log_observer.step = Mock()
+        mockedLogs = {
+            "warnings": mocked_warnings,
+            "errors": mocked_errors,
+            "cook": mocked_cook
+        }
+
+        def logReturner(logName):
+            return mockedLogs.get(logName)
+        self.unreal_log_observer.step.getLog = logReturner
+
         self.unreal_log_observer.step.setProgress = \
             lambda n, prog: self.progress.__setitem__(n, prog)
         self.maxDiff = None
@@ -89,7 +98,7 @@ class TestBuildCookRunLogLineObserver(unittest.TestCase):
 
     def test_OtherWarningReceived_4_15_(self):
         lines = [
-            "UE4Editor-Cmd: [2017.08.02-13.26.13:327][  0]LogLinker:Warning: Can't find file '/Game/Test/Some/Asset'",
+            u"UE4Editor-Cmd: [2017.08.02-13.26.13:327][  0]LogLinker:Warning: Can't find file '/Game/Test/Some/Asset'",
         ]
         self.receiveLines(*lines)
         self.assertResult(
@@ -100,7 +109,7 @@ class TestBuildCookRunLogLineObserver(unittest.TestCase):
 
     def test_OtherWarningReceived_4_17_(self):
         lines = [
-            "Cook: LogScriptCore: Warning: Script Msg: Attempted to set an invalid index on array MaterialInstances [0/0]!",
+            u"Cook: LogScriptCore: Warning: Script Msg: Attempted to set an invalid index on array MaterialInstances [0/0]!",
         ]
         self.receiveLines(*lines)
         self.assertResult(
@@ -111,7 +120,7 @@ class TestBuildCookRunLogLineObserver(unittest.TestCase):
 
     def test_CookWarningReceived_4_15(self):
         lines = [
-            "UE4Editor-Cmd: [2017.08.02-13.27.51:616][  0]LogCook:Warning: Unable to find cached package name for package /Game/Some/Asset/Reference",
+            u"UE4Editor-Cmd: [2017.08.02-13.27.51:616][  0]LogCook:Warning: Unable to find cached package name for package /Game/Some/Asset/Reference",
         ]
         self.receiveLines(*lines)
         self.assertResult(
@@ -122,7 +131,7 @@ class TestBuildCookRunLogLineObserver(unittest.TestCase):
 
     def test_CookReceived_4_15_(self):
         lines = [
-            "UE4Editor-Cmd: [2017.08.02-02.00.00:394][  0]LogCook:Display: Cooking /Game/SomeAssetReference -> C:/Path/To/Saved/Cooked/Win64/Project/Content/SomeAssetReference.uasset",
+            u"UE4Editor-Cmd: [2017.08.02-02.00.00:394][  0]LogCook:Display: Cooking /Game/SomeAssetReference -> C:/Path/To/Saved/Cooked/Win64/Project/Content/SomeAssetReference.uasset",
         ]
         self.receiveLines(*lines)
         self.assertResult(
@@ -132,7 +141,7 @@ class TestBuildCookRunLogLineObserver(unittest.TestCase):
 
     def test_CookReceived_4_17_(self):
         lines = [
-            "Cook: LogCook: Display: Cooking /Game/SomeAssetReference -> C:/Path/To/Saved/Cooked/Win64/Project/Content/SomeAssetReference.uasset",
+            u"Cook: LogCook: Display: Cooking /Game/SomeAssetReference -> C:/Path/To/Saved/Cooked/Win64/Project/Content/SomeAssetReference.uasset",
         ]
         self.receiveLines(*lines)
         self.assertResult(
@@ -172,7 +181,7 @@ class TestBuildCookRunLogLineObserver(unittest.TestCase):
 
     def test_ErrorReceived_4_17(self):
         lines = [
-            "Cook: LogBlueprint: Error: [Compiler SomeGameAsset] The property associated with  SomeComponent  could not be found from Source: /Game/Props/SomeAssetReference/",
+            u"Cook: LogBlueprint: Error: [Compiler SomeGameAsset] The property associated with  SomeComponent  could not be found from Source: /Game/Props/SomeAssetReference/",
         ]
         self.receiveLines(*lines)
         self.assertResult(
