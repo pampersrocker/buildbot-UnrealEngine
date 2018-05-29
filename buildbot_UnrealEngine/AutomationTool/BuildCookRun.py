@@ -1,14 +1,7 @@
 # -*- test-case-name: buildbot_UnrealEngine.test.test_BuildCookRun -*-
-from buildbot.process.remotecommand import RemoteCommand
 from ..UnrealCommand import BaseUnrealCommand, UnrealLogLineObserver
 from buildbot import config
-
-from twisted.python import failure
-from twisted.python import log
-
 from twisted.internet import defer
-
-from os import path
 import re
 
 
@@ -26,23 +19,25 @@ class BuildCookRunLogLineObserver(UnrealLogLineObserver):
 
     logcook = None
 
-    def __init__(self, logwarnings, logerrors, logcook, **kwargs):
-        self.logcook = logcook
-        UnrealLogLineObserver.__init__(self, logwarnings, logerrors, **kwargs)
+    def __init__(self, **kwargs):
+        UnrealLogLineObserver.__init__(self, **kwargs)
 
     def outLineReceived(self, line):
         if self._re_uat_warning.search(line):
             self.nbWarnings += 1
+            self.logwarnings = self.getOrCreateLog("warnings")
             self.logwarnings.addStdout(u"{0}\n".format(line))
             self.step.setProgress('warnings', self.nbWarnings)
             self.step.updateSummary()
         if self._re_cook_file.search(line):
             self.nbCook += 1
+            self.logcook = self.getOrCreateLog("cook")
+            self.logcook.addStdout(u"{0}\n".format(line))
             self.step.setProgress('cook', self.nbCook)
             self.step.updateSummary()
         if self._re_cook.search(line):
+            self.logcook = self.getOrCreateLog("cook")
             self.logcook.addStdout(u"{0}\n".format(line))
-            self.step.updateSummary()
         UnrealLogLineObserver.outLineReceived(self, line)
 
 
@@ -254,9 +249,9 @@ class BuildCookRun(BaseUnrealCommand):
         defer.returnValue(self.evaluateCommand(cmd))
 
     def setupLogfiles(self):
-        logwarnings = self.addLog("warnings")
-        logerrors = self.addLog("errors")
-        logcook = self.addLog("cook")
+        logwarnings = yield self.addLog("warnings")
+        logerrors = yield self.addLog("errors")
+        logcook = yield self.addLog("cook")
         self.logobserver = BuildCookRunLogLineObserver(
             logwarnings, logerrors, logcook)
         self.addLogObserver('stdio', self.logobserver)

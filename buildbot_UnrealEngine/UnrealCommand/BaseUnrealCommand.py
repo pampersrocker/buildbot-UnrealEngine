@@ -6,6 +6,7 @@ from buildbot.process.results import WARNINGS
 from buildbot import config
 from os import path
 import re
+from twisted.internet import defer
 
 
 class UnrealLogLineObserver(MSLogLineObserver):
@@ -15,15 +16,24 @@ class UnrealLogLineObserver(MSLogLineObserver):
     _re_clang_warning = re.compile(r':\s*warning\s*:')
     _re_clang_error = re.compile(r':\s*error\s*: ')
 
+    @defer.inlineCallbacks
+    def getOrCreateLog(self, logName):
+        currentLog = self.step.getLog(logName)
+        if currentLog is None:
+            currentLog = yield self.step.addLog(logName)
+        return currentLog
+
     def parseLine(self, line):
         if (self._re_ubt_error.search(line) or
-           self._re_clang_error.search(line)):
+                self._re_clang_error.search(line)):
             self.nbErrors += 1
+            self.logerrors = self.getOrCreateLog("errors")
             self.logerrors.addStderr(u"{0}\n".format(line))
             self.step.updateSummary()
             return True
         elif self._re_clang_warning.search(line):
             self.nbWarnings += 1
+            self.logwarnings = self.getOrCreateLog("warnings")
             self.logwarnings.addStdout(u"{0}\n".format(line))
             self.step.setProgress('warnings', self.nbWarnings)
             self.step.updateSummary()
