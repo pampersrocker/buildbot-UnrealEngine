@@ -2,15 +2,8 @@
 
 from setuptools import setup
 
-long_description = """
-buildbot-UnrealEngine
-=====================
-
-Documentation
--------------
-
-See https://github.com/pampersrocker/buildbot-UnrealEngine for documentation.
-"""
+with open("README.md", "r") as fh:
+    long_description = fh.read()
 
 VERSION = "1.0.0"
 
@@ -20,7 +13,7 @@ setup(
     description="Easy configuration for the Unreal Automation Tool",
     long_description=long_description,
     author="Marvin Pohl",
-    author_email="mp120@hdm-stuttgart.de",
+    author_email="marvin@lab132.com",
     url="https://github.com/pampersrocker/buildbot-UnrealEngine",
     packages=[
         "buildbot_UnrealEngine",
@@ -38,7 +31,7 @@ setup(
         ]
     },
     classifiers=[
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 5 - Production/Stable",
         "Environment :: Plugins",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
