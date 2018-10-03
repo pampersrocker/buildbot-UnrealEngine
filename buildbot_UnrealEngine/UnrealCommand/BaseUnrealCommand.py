@@ -128,7 +128,9 @@ class BaseUnrealCommand(ShellMixin, BuildStep):
         "Android",
         "HTML5",
         "Linux",
-        "TVOS"
+        "TVOS",
+        "UWP32",
+        "UWP64"
     ]
     supported_target_config = [
         "Debug",
