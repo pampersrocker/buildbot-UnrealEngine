@@ -12,6 +12,7 @@ setup(
     version=VERSION,
     description="Easy configuration for the Unreal Automation Tool",
     long_description=long_description,
+    long_description_content_type="text/markdown",
     author="Marvin Pohl",
     author_email="marvin@lab132.com",
     url="https://github.com/pampersrocker/buildbot-UnrealEngine",
