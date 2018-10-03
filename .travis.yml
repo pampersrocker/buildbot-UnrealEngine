@@ -8,7 +8,8 @@ addons:
     - aspell-en
     - ispell
     - iamerican
-
+env:
+  - BOTO_CONFIG=/dev/null
 install:
   - pip install -U pip wheel setuptools
   - "pip install --no-binary :all: -r testrequirements.txt"
