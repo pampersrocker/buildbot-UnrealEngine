@@ -122,7 +122,7 @@ class BaseUnrealCommand(ShellMixin, BuildStep):
         "Win32",
         "Win64",
         "Mac",
-        "XboxOne",
+        "XBoxOne",
         "PS4",
         "IOS",
         "Android",
