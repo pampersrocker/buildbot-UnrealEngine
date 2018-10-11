@@ -128,7 +128,11 @@ class BaseUnrealCommand(ShellMixin, BuildStep):
         "Android",
         "HTML5",
         "Linux",
+        "AllDesktop",
         "TVOS",
+        "Switch",
+        "Quail",
+        "Lumin",
         "UWP32",
         "UWP64"
     ]
