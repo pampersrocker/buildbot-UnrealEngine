@@ -8,8 +8,7 @@ import re
 class BuildCookRunLogLineObserver(UnrealLogLineObserver):
 
     _re_uat_warning = re.compile(r':\s*Warning:')
-    _re_cook = re.compile(r'LogCook:')
-    _re_cook_file = re.compile(r'LogCook:\s*Display: Cooking')
+    _re_cook_log_file = re.compile(r'^Running:.*-run=Cook.*-abslog=(?P<logfile>.*?) .*$')
 
     nbCook = 0
 
@@ -30,13 +29,10 @@ class BuildCookRunLogLineObserver(UnrealLogLineObserver):
             self.logwarnings.addStdout(u"{0}\n".format(line))
             self.step.setProgress('warnings', self.nbWarnings)
             self.step.updateSummary()
-        if self._re_cook_file.search(line):
-            self.nbCook += 1
-            self.step.setProgress('cook', self.nbCook)
-            self.step.updateSummary()
-        if self._re_cook.search(line):
-            self.logcook = yield self.getOrCreateLog("cook")
-            self.logcook.addStdout(u"{0}\n".format(line))
+        if self._re_cook_log_file.search(line):
+            match = self._re_cook_log_file.match(line)
+            cook_logfile = match.group("logfile")
+            self.step.setupLogfiles(self.cmd, {"cook": cook_logfile})
         UnrealLogLineObserver.outLineReceived(self, line)
 
 
@@ -90,6 +86,7 @@ class BuildCookRun(BaseUnrealCommand):
         "package",
         "crash_reporter",
         "title_id",
+        "verbose",
     ]
 
     def __init__(self,
@@ -124,6 +121,7 @@ class BuildCookRun(BaseUnrealCommand):
                  package=False,
                  crash_reporter=False,
                  title_id=None,
+                 verbose=False,
                  **kwargs):
         self.target_platform = target_platform
         self.target_config = target_config
@@ -155,6 +153,7 @@ class BuildCookRun(BaseUnrealCommand):
         self.package = package
         self.title_id = title_id
         self.crash_reporter = crash_reporter
+        self.verbose = verbose
         BaseUnrealCommand.__init__(self, engine_path, project_path, **kwargs)
 
     def doSanityChecks(self):
@@ -237,6 +236,8 @@ class BuildCookRun(BaseUnrealCommand):
             command.append("-Package")
         if self.crash_reporter:
             command.append("-CrashReporter")
+        if self.verbose:
+            command.append("-Verbose")
 
         if type(self.title_id) is list:
             command.append("-TitleID={0}".format("+".join(self.title_id)))
