@@ -90,6 +90,7 @@ class BuildCookRun(BaseUnrealCommand):
         "package",
         "crash_reporter",
         "title_id",
+        "verbose",
     ]
 
     def __init__(self,
@@ -124,6 +125,7 @@ class BuildCookRun(BaseUnrealCommand):
                  package=False,
                  crash_reporter=False,
                  title_id=None,
+                 verbose=False,
                  **kwargs):
         self.target_platform = target_platform
         self.target_config = target_config
@@ -155,6 +157,7 @@ class BuildCookRun(BaseUnrealCommand):
         self.package = package
         self.title_id = title_id
         self.crash_reporter = crash_reporter
+        self.verbose = verbose
         BaseUnrealCommand.__init__(self, engine_path, project_path, **kwargs)
 
     def doSanityChecks(self):
@@ -237,6 +240,8 @@ class BuildCookRun(BaseUnrealCommand):
             command.append("-Package")
         if self.crash_reporter:
             command.append("-CrashReporter")
+        if self.verbose:
+            command.append("-Verbose")
 
         if type(self.title_id) is list:
             command.append("-TitleID={0}".format("+".join(self.title_id)))

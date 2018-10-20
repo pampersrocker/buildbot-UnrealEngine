@@ -490,6 +490,12 @@ class TestBuildCookRun(
             extra_arguments=["-CrashReporter"]
         )
 
+    def test_Verbose(self):
+        return self.createTest(
+            verbose=True,
+            extra_arguments=["-Verbose"]
+        )
+
     def test_TitleIdMulti(self):
         return self.createTest(
             title_id=["Title_ID_A", "Title_ID_B", "Title_ID_C"],
