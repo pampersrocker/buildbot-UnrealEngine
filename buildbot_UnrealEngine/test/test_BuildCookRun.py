@@ -197,6 +197,13 @@ def renderableIsValue(renderable, value):
         return False
 
 
+def getRenderableOrValue(renderable):
+    try:
+        return renderable.getRenderingFor(None)
+    except:
+        return renderable
+
+
 def createExpectedShell(
         engine_path="Here",
         project_path="There/Project.uproject",
@@ -209,6 +216,10 @@ def createExpectedShell(
         cook=None,
         cook_on_the_fly=None,
         **kwargs):
+    target_platform = getRenderableOrValue(target_platform)
+    target_platform = "+".join(target_platform) if isinstance(target_platform, list) else target_platform
+    target_config = getRenderableOrValue(target_config)
+    target_config = "+".join(target_config) if isinstance(target_config, list) else target_config
     commands = [
         path.join(
             engine_path,
@@ -698,6 +709,15 @@ class TestBuildCookRun(
             extra_arguments=["-TitleID=Title_ID_A"],
         )
 
+    def test_TargetPlatformMulti_Renderable(self):
+        return self.createTest(
+            target_platform=ConstantRenderable(["Win64", "PS4"]),
+        )
+    def test_TargetConfigMulti_Renderable(self):
+        return self.createTest(
+            target_config=ConstantRenderable(["Development", "Shipping"]),
+        )
+
 
 def targetPlatformTemplate(target_platform):
     """
@@ -714,8 +734,25 @@ def targetPlatformTemplate(target_platform):
 
 # Create test functions for all supported platforms
 for platform in UAT.BuildCookRun.supported_target_platforms:
-    setattr(TestBuildCookRun, "test_TargetPlatform{0}".format(
+    setattr(TestBuildCookRun, "test_TargetPlatform_{0}".format(
         platform), targetPlatformTemplate(platform))
+
+def targetPlatformTemplateRenderable(target_platform):
+    """
+    Creates a test function to test if the client
+    and serverconfig is correctly set for the given platform using a renderable
+    """
+
+    def targetPlatformImplementation(self):
+        return self.createTest(
+            target_platform=ConstantRenderable(target_platform)
+        )
+    return targetPlatformImplementation
+
+# Create test functions for all supported platforms
+for platform in UAT.BuildCookRun.supported_target_platforms:
+    setattr(TestBuildCookRun, "test_TargetPlatformRenderable_{0}".format(
+        platform), targetPlatformTemplateRenderable(platform))
 
 
 def generateTargetConfigurationTest(target_config):
@@ -727,8 +764,20 @@ def generateTargetConfigurationTest(target_config):
 
 
 for config in UAT.BuildCookRun.supported_target_config:
-    setattr(TestBuildCookRun, "test_TargetConfiguration{0}".format(
+    setattr(TestBuildCookRun, "test_TargetConfiguration_{0}".format(
         config), generateTargetConfigurationTest(config))
+
+def generateTargetConfigurationTestRenderable(target_config):
+    def targetConfigurationImplementation(self):
+        return self.createTest(
+            target_config=ConstantRenderable(target_config)
+        )
+    return targetConfigurationImplementation
+
+
+for config in UAT.BuildCookRun.supported_target_config:
+    setattr(TestBuildCookRun, "test_TargetConfigurationRenderable_{0}".format(
+        config), generateTargetConfigurationTestRenderable(config))
 
 
 def generateBuildPlatformTest(build_platform, ending):

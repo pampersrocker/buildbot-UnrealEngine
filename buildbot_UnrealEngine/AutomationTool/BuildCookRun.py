@@ -61,8 +61,6 @@ class BuildCookRun(BaseUnrealCommand):
         "archive_directory",
         "release_version",
         "base_version",
-        "target_platform",
-        "target_config",
         "no_compile_editor",
         "compile",
         "cook",
@@ -162,10 +160,10 @@ class BuildCookRun(BaseUnrealCommand):
 
     def doSanityChecks(self):
         BaseUnrealCommand.doSanityChecks(self)
-        if self.target_config not in self.supported_target_config:
+        if isinstance(self.target_config, (str, list)) and self.target_config not in self.supported_target_config:
             config.error("target_config '{0}' is not supported".format(
                 self.target_config))
-        if self.target_platform not in self.supported_target_platforms:
+        if isinstance(self.target_platform, (str, list)) and self.target_platform not in self.supported_target_platforms:
             config.error("target_platform '{0}' is not supported".format(
                 self.target_platform))
 
@@ -180,10 +178,12 @@ class BuildCookRun(BaseUnrealCommand):
             "RunUAT", inside_platform_dir=False)]
         command.append("BuildCookRun")
         command.append("-project={0}".format(self.project_path))
-        command.append("-targetplatform={0}".format(self.target_platform))
-        command.append("-platform={0}".format(self.target_platform))
-        command.append("-clientconfig={0}".format(self.target_config))
-        command.append("-serverconfig={0}".format(self.target_config))
+        platform = "+".join(self.target_platform) if isinstance(self.target_platform, list) else self.target_platform
+        config = "+".join(self.target_config) if isinstance(self.target_config, list) else self.target_config
+        command.append("-targetplatform={0}".format(platform))
+        command.append("-platform={0}".format(platform))
+        command.append("-clientconfig={0}".format(config))
+        command.append("-serverconfig={0}".format(config))
         if self.engine_type != "Source":
             command.append("-{0}".format(self.engine_type))
         addArgIfSet(self.compile, command, "-Compile", "-NoCompile")
@@ -268,8 +268,8 @@ class BuildCookRun(BaseUnrealCommand):
         description.extend([
             self.getProjectFileName(),
             'for',
-            self.target_config,
-            self.target_platform])
+            str(self.target_config),
+            str(self.target_platform)])
         cook = self.getStatistic('cook', 0)
         if cook > 0:
             description.append("{0} files cooked".format(cook))
