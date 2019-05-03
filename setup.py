@@ -22,7 +22,7 @@ setup(
         "buildbot_UnrealEngine.AutomationTool",
         "buildbot_UnrealEngine.UnrealCommand"
     ],
-    requires=["Buildbot (>=0.9.1)"],
+    requires=["Buildbot (>=2.2.0)"],
     entry_points={
         'buildbot.steps': [
             'BuildCookRun = buildbot_UnrealEngine.AutomationTool:BuildCookRun',
