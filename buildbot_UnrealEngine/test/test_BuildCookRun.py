@@ -519,6 +519,30 @@ class TestBuildCookRun(
             extra_arguments=["-TitleID=Title_ID_A"],
         )
 
+    def test_DLCName(self):
+        return self.createTest(
+            dlc_name="TestDLC",
+            extra_arguments=["-DLCName=TestDLC"],
+        )
+
+    def test_DLCIncludEngine(self):
+        return self.createTest(
+            dlc_include_engine=True,
+            extra_arguments=["-DLCIncludeEngineContent"],
+        )
+
+    def test_ExtraArgsString(self):
+        return self.createTest(
+            extra_args="-Something -Other",
+            extra_arguments=["-Something -Other"],
+        )
+
+    def test_ExtraArgsList(self):
+        return self.createTest(
+            extra_args=["-Something", "-Other"],
+            extra_arguments=["-Something", "-Other"],
+        )
+
     # Renderables
     def test_Build_Renderable(self):
         return self.createTest(build=constant_true, extra_arguments=["-Build"])
@@ -709,10 +733,35 @@ class TestBuildCookRun(
             extra_arguments=["-TitleID=Title_ID_A"],
         )
 
+    def test_DLCName_Renderable(self):
+        return self.createTest(
+            dlc_name=ConstantRenderable("TestDLC"),
+            extra_arguments=["-DLCName=TestDLC"],
+        )
+
+    def test_DLCIncludEngine_Renderable(self):
+        return self.createTest(
+            dlc_include_engine=constant_true,
+            extra_arguments=["-DLCIncludeEngineContent"],
+        )
+
+    def test_ExtraArgsString_Renderable(self):
+        return self.createTest(
+            extra_args=ConstantRenderable("-Something -Other"),
+            extra_arguments=["-Something -Other"],
+        )
+
+    def test_ExtraArgsList_Renderable(self):
+        return self.createTest(
+            extra_args=ConstantRenderable(["-Something", "-Other"]),
+            extra_arguments=["-Something", "-Other"],
+        )
+
     def test_TargetPlatformMulti_Renderable(self):
         return self.createTest(
             target_platform=ConstantRenderable(["Win64", "PS4"]),
         )
+
     def test_TargetConfigMulti_Renderable(self):
         return self.createTest(
             target_config=ConstantRenderable(["Development", "Shipping"]),

@@ -44,7 +44,7 @@ class BuildCookRun(BaseUnrealCommand):
 
     """
     Creates a command like
-    <Path to Engine>\Engine\Build\BatchFiles\RunUAT.bat BuildCookRun
+    <Path to Engine>/Engine/Build/BatchFiles/RunUAT.bat BuildCookRun
     -project=<ProjectPath> -noP4 -nocompileeditor
     -targetplatform=<Platform> -platform=<Platform>
     -clientconfig=<TargetConfig> -serverconfig=<TargetConfig>
@@ -88,6 +88,9 @@ class BuildCookRun(BaseUnrealCommand):
         "package",
         "crash_reporter",
         "title_id",
+        "dlc_name",
+        "dlc_include_engine",
+        "extra_args",
         "verbose",
     ]
 
@@ -123,7 +126,10 @@ class BuildCookRun(BaseUnrealCommand):
                  package=False,
                  crash_reporter=False,
                  title_id=None,
+                 dlc_name=None,
+                 dlc_include_engine=False,
                  verbose=False,
+                 extra_args=None,
                  **kwargs):
         self.target_platform = target_platform
         self.target_config = target_config
@@ -154,8 +160,11 @@ class BuildCookRun(BaseUnrealCommand):
         self.prereqs = prereqs
         self.package = package
         self.title_id = title_id
+        self.dlc_name = dlc_name
+        self.dlc_include_engine = dlc_include_engine
         self.crash_reporter = crash_reporter
         self.verbose = verbose
+        self.extra_args = extra_args
         BaseUnrealCommand.__init__(self, engine_path, project_path, **kwargs)
 
     def doSanityChecks(self):
@@ -166,6 +175,8 @@ class BuildCookRun(BaseUnrealCommand):
         if isinstance(self.target_platform, (str, list)) and self.target_platform not in self.supported_target_platforms:
             config.error("target_platform '{0}' is not supported".format(
                 self.target_platform))
+        if self.dlc_name and self.iterate:
+            config.error("Cannot build DLC and perform iterative build at the same time")
 
     @defer.inlineCallbacks
     def run(self):
@@ -242,6 +253,15 @@ class BuildCookRun(BaseUnrealCommand):
             command.append("-CrashReporter")
         if self.verbose:
             command.append("-Verbose")
+        if self.dlc_name:
+            command.append("-DLCName={}".format(self.dlc_name))
+        if self.dlc_include_engine:
+            command.append("-DLCIncludeEngineContent")
+        if self.extra_args:
+            if type(self.extra_args) is list:
+                command.extend(self.extra_args)
+            else:
+                command.append(self.extra_args)
 
         if type(self.title_id) is list:
             command.append("-TitleID={0}".format("+".join(self.title_id)))
