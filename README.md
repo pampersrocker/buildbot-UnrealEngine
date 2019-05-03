@@ -105,6 +105,9 @@ factory.addStep(
         package=False,
         crash_reporter=False,
         title_id=None,
+        dlc_name=None,
+        dlc_include_engine=False,
+        extra_args=None,
     )
 )
 ```
@@ -137,7 +140,10 @@ factory.addStep(
 | prereqs | bool | If true adds `-Prereqs` to the command line. Include prerequisites in the packaged game. |
 | package | bool | If true adds `-Package` to the command line. Package the game for the target platform (app file on Mac, apk on Android or ipa on iPhone) |
 | crash_reporter | bool | If true adds `-CrashReporter` to the command line. Includes the crash reporter during packaging. |
+| dlc_name | string | If set adds -DLCName=<DLCName> to the command line. This will cook the specified Plugin as DLC. |
+| dlc_include_engine | bool | If true adds `-DLCIncludEngineContent` to the command line. DLC should include Engine content. |
 | title_id | string or list of strings | If true adds `-TitleId=<Title+Id+Separated>` to the command line. PS4 specific title id command. |
+| extra_args | string or list of strings | If set adds the given arguments to the command line. Can be used for custom or missing command line parameters. |
 
 
 # Development Setup under Windows
