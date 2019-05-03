@@ -15,6 +15,7 @@ from buildbot.test.util import gpo
 from buildbot.test.util import logging
 from buildbot.test.util import steps
 from buildbot.test.util import config as configmixin
+from buildbot.test.util.misc import TestReactorMixin
 
 from buildbot.test.fake.remotecommand import ExpectShell
 from buildbot.test.fake.remotecommand import Expect
@@ -121,9 +122,11 @@ def createBuildCommandLambda(
 class TestBuild(
         steps.BuildStepMixin,
         unittest.TestCase,
-        configmixin.ConfigErrorsMixin):
+        configmixin.ConfigErrorsMixin,
+        TestReactorMixin):
 
     def setUp(self):
+        self.setUpTestReactor()
         return self.setUpBuildStep()
 
     def tearDown(self):

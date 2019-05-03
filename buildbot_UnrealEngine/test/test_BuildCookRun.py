@@ -17,6 +17,7 @@ from buildbot.test.util import logging
 from buildbot.test.util import steps
 from buildbot.test.util import config as configmixin
 from buildbot.test.util.properties import ConstantRenderable
+from buildbot.test.util.misc import TestReactorMixin
 
 from buildbot.test.fake.remotecommand import ExpectShell
 from buildbot.test.fake.remotecommand import Expect
@@ -30,9 +31,12 @@ constant_true = ConstantRenderable(True)
 constant_false = ConstantRenderable(False)
 
 
-class TestBuildCookRunLogLineObserver(unittest.TestCase):
+class TestBuildCookRunLogLineObserver(
+        unittest.TestCase,
+        TestReactorMixin):
 
     def setUp(self):
+        self.setUpTestReactor()
         self.warnings = []
         mocked_warnings = Mock()
         mocked_warnings.addStdout = lambda l: self.warnings.append(l.rstrip())
@@ -217,9 +221,11 @@ def createExpectedShell(
         cook_on_the_fly=None,
         **kwargs):
     target_platform = getRenderableOrValue(target_platform)
-    target_platform = "+".join(target_platform) if isinstance(target_platform, list) else target_platform
+    target_platform = "+".join(target_platform) if isinstance(
+        target_platform, list) else target_platform
     target_config = getRenderableOrValue(target_config)
-    target_config = "+".join(target_config) if isinstance(target_config, list) else target_config
+    target_config = "+".join(target_config) if isinstance(
+        target_config, list) else target_config
     commands = [
         path.join(
             engine_path,
@@ -265,8 +271,10 @@ def createBuildCommand(
 class TestBuildCookRun(
         steps.BuildStepMixin,
         unittest.TestCase,
-        configmixin.ConfigErrorsMixin):
+        configmixin.ConfigErrorsMixin,
+        TestReactorMixin):
     def setUp(self):
+        self.setUpTestReactor()
         return self.setUpBuildStep()
 
     def tearDown(self):
@@ -390,9 +398,9 @@ class TestBuildCookRun(
         return self.createTest(archive=False)
 
     def test_ArhiveDirectory(self):
-            return self.createTest(
-                archive_directory="There/Archive",
-                extra_arguments=["-ArchiveDirectory=There/Archive"])
+        return self.createTest(
+            archive_directory="There/Archive",
+            extra_arguments=["-ArchiveDirectory=There/Archive"])
 
     def test_P4(self):
         return self.createTest(p4=True, extra_arguments=["-P4"])
@@ -609,9 +617,9 @@ class TestBuildCookRun(
         return self.createTest(archive=constant_false)
 
     def test_ArhiveDirectory_Renderable(self):
-            return self.createTest(
-                archive_directory=ConstantRenderable("There/Archive"),
-                extra_arguments=["-ArchiveDirectory=There/Archive"])
+        return self.createTest(
+            archive_directory=ConstantRenderable("There/Archive"),
+            extra_arguments=["-ArchiveDirectory=There/Archive"])
 
     def test_P4_Renderable(self):
         return self.createTest(p4=constant_true, extra_arguments=["-P4"])
@@ -786,6 +794,7 @@ for platform in UAT.BuildCookRun.supported_target_platforms:
     setattr(TestBuildCookRun, "test_TargetPlatform_{0}".format(
         platform), targetPlatformTemplate(platform))
 
+
 def targetPlatformTemplateRenderable(target_platform):
     """
     Creates a test function to test if the client
@@ -797,6 +806,7 @@ def targetPlatformTemplateRenderable(target_platform):
             target_platform=ConstantRenderable(target_platform)
         )
     return targetPlatformImplementation
+
 
 # Create test functions for all supported platforms
 for platform in UAT.BuildCookRun.supported_target_platforms:
@@ -815,6 +825,7 @@ def generateTargetConfigurationTest(target_config):
 for config in UAT.BuildCookRun.supported_target_config:
     setattr(TestBuildCookRun, "test_TargetConfiguration_{0}".format(
         config), generateTargetConfigurationTest(config))
+
 
 def generateTargetConfigurationTestRenderable(target_config):
     def targetConfigurationImplementation(self):
