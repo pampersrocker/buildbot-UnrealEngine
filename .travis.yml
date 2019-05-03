@@ -15,7 +15,5 @@ install:
   - "pip install --no-binary :all: -r testrequirements.txt"
   - pip install -r requirements.txt
   - pip install -e .
-  - "easy_install http://darcs.idyll.org/~t/projects/figleaf-latest.tar.gz"
-  - "pip install git+https://github.com/jrydberg/txcovreport.git"
 
-script: "trial --reporter=tree-coverage buildbot_UnrealEngine.test"
+script: "trial buildbot_UnrealEngine.test"
