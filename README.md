@@ -107,6 +107,7 @@ factory.addStep(
         title_id=None,
         dlc_name=None,
         dlc_include_engine=False,
+        generate_patch=False
         extra_args=None,
     )
 )
@@ -142,6 +143,7 @@ factory.addStep(
 | crash_reporter | bool | If true adds `-CrashReporter` to the command line. Includes the crash reporter during packaging. |
 | dlc_name | string | If set adds -DLCName=<DLCName> to the command line. This will cook the specified Plugin as DLC. |
 | dlc_include_engine | bool | If true adds `-DLCIncludEngineContent` to the command line. DLC should include Engine content. |
+| generate_patch | bool | If true adds `-GeneratePatch` to the command line. Create a patch, requires `base_version` to be set. |
 | title_id | string or list of strings | If true adds `-TitleId=<Title+Id+Separated>` to the command line. PS4 specific title id command. |
 | extra_args | string or list of strings | If set adds the given arguments to the command line. Can be used for custom or missing command line parameters. |
 
