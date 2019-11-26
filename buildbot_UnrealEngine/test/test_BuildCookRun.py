@@ -539,6 +539,12 @@ class TestBuildCookRun(
             extra_arguments=["-DLCIncludeEngineContent"],
         )
 
+    def test_GeneratePatch(self):
+        return self.createTest(
+            generate_patch=True,
+            extra_arguments=["-GeneratePatch"],
+        )
+
     def test_ExtraArgsString(self):
         return self.createTest(
             extra_args="-Something -Other",
@@ -751,6 +757,12 @@ class TestBuildCookRun(
         return self.createTest(
             dlc_include_engine=constant_true,
             extra_arguments=["-DLCIncludeEngineContent"],
+        )
+
+    def test_GeneratePatch_Renderable(self):
+        return self.createTest(
+            generate_patch=constant_true,
+            extra_arguments=["-GeneratePatch"],
         )
 
     def test_ExtraArgsString_Renderable(self):

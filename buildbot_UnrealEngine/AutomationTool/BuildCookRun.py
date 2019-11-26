@@ -92,6 +92,7 @@ class BuildCookRun(BaseUnrealCommand):
         "dlc_include_engine",
         "extra_args",
         "verbose",
+        "generate_patch",
     ]
 
     def __init__(self,
@@ -129,6 +130,7 @@ class BuildCookRun(BaseUnrealCommand):
                  dlc_name=None,
                  dlc_include_engine=False,
                  verbose=False,
+                 generate_patch=False,
                  extra_args=None,
                  **kwargs):
         self.target_platform = target_platform
@@ -164,6 +166,7 @@ class BuildCookRun(BaseUnrealCommand):
         self.dlc_include_engine = dlc_include_engine
         self.crash_reporter = crash_reporter
         self.verbose = verbose
+        self.generate_patch = generate_patch
         self.extra_args = extra_args
         BaseUnrealCommand.__init__(self, engine_path, project_path, **kwargs)
 
@@ -257,6 +260,8 @@ class BuildCookRun(BaseUnrealCommand):
             command.append("-DLCName={}".format(self.dlc_name))
         if self.dlc_include_engine:
             command.append("-DLCIncludeEngineContent")
+        if self.generate_patch:
+            command.append("-GeneratePatch")
         if self.extra_args:
             if type(self.extra_args) is list:
                 command.extend(self.extra_args)
