@@ -545,6 +545,18 @@ class TestBuildCookRun(
             extra_arguments=["-GeneratePatch"],
         )
 
+    def test_GenerateRemaster(self):
+        return self.createTest(
+            generate_remaster=True,
+            extra_arguments=["-GenerateRemaster"],
+        )
+
+    def test_AddPatchLevel(self):
+        return self.createTest(
+            add_patch_level=True,
+            extra_arguments=["-AddPatchLevel"],
+        )
+
     def test_ExtraArgsString(self):
         return self.createTest(
             extra_args="-Something -Other",
@@ -763,6 +775,18 @@ class TestBuildCookRun(
         return self.createTest(
             generate_patch=constant_true,
             extra_arguments=["-GeneratePatch"],
+        )
+
+    def test_GenerateRemaster_Renderable(self):
+        return self.createTest(
+            generate_remaster=constant_true,
+            extra_arguments=["-GenerateRemaster"],
+        )
+
+    def test_AddPatchLevel_Renderable(self):
+        return self.createTest(
+            add_patch_level=constant_true,
+            extra_arguments=["-AddPatchLevel"],
         )
 
     def test_ExtraArgsString_Renderable(self):

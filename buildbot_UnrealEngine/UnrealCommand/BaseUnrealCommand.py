@@ -134,7 +134,8 @@ class BaseUnrealCommand(ShellMixin, BuildStep):
         "Quail",
         "Lumin",
         "UWP32",
-        "UWP64"
+        "UWP64",
+        "HoloLens",
     ]
     supported_target_config = [
         "Debug",

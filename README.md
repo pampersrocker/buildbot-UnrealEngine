@@ -107,7 +107,9 @@ factory.addStep(
         title_id=None,
         dlc_name=None,
         dlc_include_engine=False,
-        generate_patch=False
+        generate_patch=False,
+        add_patch_level=False,
+        generate_remaster=False,
         extra_args=None,
     )
 )
@@ -144,6 +146,8 @@ factory.addStep(
 | dlc_name | string | If set adds -DLCName=<DLCName> to the command line. This will cook the specified Plugin as DLC. |
 | dlc_include_engine | bool | If true adds `-DLCIncludEngineContent` to the command line. DLC should include Engine content. |
 | generate_patch | bool | If true adds `-GeneratePatch` to the command line. Create a patch, requires `base_version` to be set. |
+| add_patch_level | bool | If true adds `-AddPatchLevel` to the command line. Adds a patch pak level, when creating a patch. |
+| generate_remaster | bool | If true adds `-GenerateRemaster` to the command line. PS4 specific patch option. |
 | title_id | string or list of strings | If true adds `-TitleId=<Title+Id+Separated>` to the command line. PS4 specific title id command. |
 | extra_args | string or list of strings | If set adds the given arguments to the command line. Can be used for custom or missing command line parameters. |
 
