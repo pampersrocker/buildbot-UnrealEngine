@@ -13,6 +13,14 @@ class Build(BaseUnrealCommand):
 
     supported_build_types = ["Build", "Rebuild", "Clean"]
 
+    renderables = [
+        "target_platform",
+        "target_config",
+        "wait_mutex",
+        "build_type",
+        "target",
+    ]
+
     def __init__(
             self,
             engine_path,
