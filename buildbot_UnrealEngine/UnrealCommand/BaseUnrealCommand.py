@@ -1,5 +1,5 @@
 from buildbot.process.buildstep import BuildStep, ShellMixin
-from buildbot.process.buildstep import LogLineObserver
+from buildbot.process.logobserver import LogLineObserver
 from buildbot.process.results import FAILURE
 from buildbot.process.results import SUCCESS
 from buildbot.process.results import WARNINGS
